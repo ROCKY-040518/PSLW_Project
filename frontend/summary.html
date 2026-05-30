@@ -3,7 +3,7 @@
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Summary Detail - PSLW App</title>
+<title>Summary Detail - PSLW</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
@@ -114,7 +114,7 @@
 <!-- SideNavBar (Suppressed on transactional/sub-pages per instructions, but requested in prompt. Assuming this is a sub-page view within the main app ecosystem, but standard "Back to Dashboard" implies it's a focus view. However, prompt explicitly requests "Sidebar (SideNavBar component)". We will include it.) -->
 <nav class="hidden md:flex flex-col h-full py-lg bg-surface-container-low dark:bg-surface-dim text-primary dark:text-primary-fixed font-body-md text-body-md fixed left-0 top-0 w-[280px] border-r border-outline-variant dark:border-outline z-50">
 <div class="px-lg mb-xl">
-<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">PSLW App</h1>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">PSLW</h1>
 <p class="font-label-md text-label-md text-on-surface-variant opacity-80 mt-xs">Invisible Intelligence</p>
 </div>
 <div class="px-md mb-lg">
@@ -173,12 +173,12 @@
 <main class="flex-1 md:ml-[280px] min-h-screen flex flex-col max-w-[max-width] mx-auto w-full">
 <!-- Header / Back Navigation -->
 <header class="px-margin-mobile md:px-margin-desktop py-lg flex items-center justify-between border-b border-outline-variant bg-surface sticky top-0 z-40">
-<a class="flex items-center gap-sm text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="#">
+<a class="flex items-center gap-sm text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="home.html">
 <span class="material-symbols-outlined">arrow_back</span>
                 Back to Dashboard
             </a>
 <div class="flex items-center gap-md">
-<span class="font-mono-sm text-mono-sm text-outline bg-surface-container px-sm py-xs rounded">ID: Q3-2023-REV</span>
+<span class="font-mono-sm text-mono-sm text-outline bg-surface-container px-sm py-xs rounded" id="summary-id-badge">ID: —</span>
 <span class="inline-flex items-center rounded-full bg-surface-container-highest px-sm py-xs font-label-md text-label-md text-on-surface-variant">
 <span class="w-2 h-2 rounded-full bg-primary mr-sm"></span>
                     Completed
@@ -198,7 +198,7 @@
 <span class="material-symbols-outlined">download</span>
 </button>
 </div>
-<div class="flex-1 overflow-y-auto p-md md:p-lg space-y-md font-body-md text-body-md text-on-surface-variant leading-relaxed">
+<div class="flex-1 overflow-y-auto p-md md:p-lg" id="transcript-container">
 <!-- Line items for transcript -->
 <div class="flex gap-md group">
 <div class="w-12 text-outline font-mono-sm text-mono-sm pt-1 shrink-0">00:01</div>
@@ -258,7 +258,7 @@
 <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
 <h2 class="font-headline-md text-headline-md text-on-surface">AI Summary</h2>
 </div>
-<div class="flex-1 overflow-y-auto p-md md:p-lg">
+<div class="flex-1 overflow-y-auto p-md md:p-lg" id="summary-container">
 <div class="space-y-xl">
 <!-- Key Takeaways -->
 <div>
@@ -307,7 +307,7 @@
 </div>
 <!-- Footer Actions -->
 <div class="mt-lg flex justify-end">
-<button class="bg-error-container text-on-error-container hover:bg-error hover:text-on-error font-label-md text-label-md py-2 px-xl rounded-lg transition-colors flex items-center gap-sm">
+<button onclick="deleteSummary()" id="delete-btn" class="bg-error-container text-on-error-container hover:bg-error hover:text-on-error font-label-md text-label-md py-2 px-xl rounded-lg transition-colors flex items-center gap-sm">
 <span class="material-symbols-outlined text-[20px]">delete</span>
                         Delete this File
                     </button>
@@ -315,4 +315,64 @@
 </div>
 </div>
 </main>
+<script>
+    const BASE_URL = 'http://localhost:8000';
+
+    if (!localStorage.getItem('pslw_user')) { window.location.href = 'login.html'; }
+
+    const params = new URLSearchParams(window.location.search);
+    const summaryId = params.get('id');
+    if (!summaryId) { window.location.href = 'home.html'; }
+
+    async function loadSummary() {
+        try {
+            const res = await fetch(`${BASE_URL}/api/summary/${summaryId}`);
+            if (!res.ok) throw new Error('Not found');
+            const data = await res.json();
+
+            // 헤더 업데이트
+            const badge = document.getElementById('summary-id-badge');
+            if (badge) badge.textContent = `ID: ${summaryId}`;
+            document.title = `${data.filename} - PSLW`;
+
+            // 트랜스크립트 표시
+            const transcriptContainer = document.getElementById('transcript-container');
+            if (transcriptContainer) {
+                transcriptContainer.innerHTML = '';
+                const p = document.createElement('p');
+                p.className = 'font-body-md text-body-md text-on-surface-variant leading-relaxed whitespace-pre-wrap';
+                p.textContent = data.transcript || '(내용 없음)';
+                transcriptContainer.appendChild(p);
+            }
+
+            // AI 요약 표시
+            const summaryContainer = document.getElementById('summary-container');
+            if (summaryContainer) {
+                summaryContainer.innerHTML = '';
+                const heading = document.createElement('h3');
+                heading.className = 'font-headline-md text-headline-md text-on-surface mb-md';
+                heading.textContent = data.filename;
+                const p = document.createElement('p');
+                p.className = 'font-body-md text-body-md text-on-surface-variant leading-relaxed whitespace-pre-wrap';
+                p.textContent = data.summaryText || '(요약 없음)';
+                summaryContainer.appendChild(heading);
+                summaryContainer.appendChild(p);
+            }
+        } catch {
+            alert('데이터를 불러오는 데 실패했습니다.');
+            window.location.href = 'home.html';
+        }
+    }
+
+    async function deleteSummary() {
+        if (!confirm('이 요약을 삭제하시겠습니까?')) return;
+        try {
+            const res = await fetch(`${BASE_URL}/api/summary/${summaryId}`, { method: 'DELETE' });
+            if (res.ok) { window.location.href = 'home.html'; }
+            else { alert('삭제 실패. 다시 시도해주세요.'); }
+        } catch { alert('서버 연결 오류.'); }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSummary);
+</script>
 </body></html>

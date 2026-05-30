@@ -193,9 +193,8 @@
 <span class="material-symbols-outlined text-xl">smart_toy</span>
 </span>
 <select class="w-full bg-surface border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg pl-10 pr-10 py-2.5 appearance-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer" id="provider" name="provider">
-<option value="openai">OpenAI (GPT-4)</option>
+<option value="openai">OpenAI (GPT-4o-mini)</option>
 <option value="gemini">Google Gemini</option>
-<option value="anthropic">Anthropic Claude</option>
 </select>
 <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-outline">
 <span class="material-symbols-outlined text-xl">expand_more</span>
@@ -237,12 +236,15 @@
 </div>
 </main>
 <script>
+        const BASE_URL = 'http://localhost:8000';
         let isLoginMode = true;
+
+        // 이미 로그인된 경우 홈으로 리다이렉트
+        if (localStorage.getItem('pslw_user')) { window.location.href = 'home.html'; }
 
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password');
             const visibilityIcon = document.getElementById('visibility-icon');
-            
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 visibilityIcon.textContent = 'visibility_off';
@@ -254,7 +256,6 @@
 
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
-            
             const signupFields = document.getElementById('signup-fields');
             const submitBtnText = document.getElementById('submit-btn-text');
             const subtitle = document.getElementById('auth-subtitle');
@@ -264,47 +265,102 @@
             const form = document.getElementById('auth-form');
 
             if (!isLoginMode) {
-                // Switch to Register Mode
                 signupFields.classList.remove('hidden');
-                // Small delay to allow display:block to apply before animating opacity
-                setTimeout(() => {
-                    signupFields.classList.remove('opacity-0');
-                }, 10);
-                
+                setTimeout(() => { signupFields.classList.remove('opacity-0'); }, 10);
                 submitBtnText.textContent = 'Create Account';
                 subtitle.textContent = 'Join PSLW platform';
                 togglePrompt.textContent = 'Already have an account?';
                 toggleAction.textContent = 'Sign in';
                 forgotPasswordLink.classList.add('hidden');
-                
-                // Add required attributes for register mode
                 document.getElementById('provider').setAttribute('required', 'true');
-                
             } else {
-                // Switch to Login Mode
                 signupFields.classList.add('opacity-0');
-                
-                // Wait for transition before hiding
-                setTimeout(() => {
-                    signupFields.classList.add('hidden');
-                }, 300);
-
+                setTimeout(() => { signupFields.classList.add('hidden'); }, 300);
                 submitBtnText.textContent = 'Sign In';
                 subtitle.textContent = 'Sign in to your account';
-                togglePrompt.textContent = 'Don\'t have an account?';
+                togglePrompt.textContent = "Don't have an account?";
                 toggleAction.textContent = 'Register here';
                 forgotPasswordLink.classList.remove('hidden');
-                
-                // Remove required attributes for login mode
                 document.getElementById('provider').removeAttribute('required');
             }
-            
-            // Add a small subtle shake to the form container to emphasize state change
             form.style.transform = 'scale(0.99)';
             setTimeout(() => {
                 form.style.transform = 'scale(1)';
                 form.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
             }, 150);
         }
+
+        function showError(msg) {
+            let el = document.getElementById('auth-error');
+            if (!el) {
+                el = document.createElement('p');
+                el.id = 'auth-error';
+                el.className = 'text-error font-body-sm text-body-sm text-center mt-2';
+                document.getElementById('submit-btn').insertAdjacentElement('afterend', el);
+            }
+            el.textContent = msg;
+        }
+
+        function setLoading(on) {
+            const btn = document.getElementById('submit-btn');
+            const txt = document.getElementById('submit-btn-text');
+            btn.disabled = on;
+            btn.style.opacity = on ? '0.7' : '1';
+            txt.textContent = on ? 'Please wait...' : (isLoginMode ? 'Sign In' : 'Create Account');
+        }
+
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errEl = document.getElementById('auth-error');
+            if (errEl) errEl.textContent = '';
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            if (!username || !password) { showError('Username and password are required.'); return; }
+
+            setLoading(true);
+            try {
+                if (isLoginMode) {
+                    const res = await fetch(`${BASE_URL}/api/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) { showError(data.detail || 'Login failed.'); return; }
+                    localStorage.setItem('pslw_user', JSON.stringify(data));
+                    window.location.href = 'home.html';
+                } else {
+                    const provider = document.getElementById('provider').value;
+                    const api_key = document.getElementById('apikey').value.trim();
+                    if (!api_key) { showError('API Key is required.'); setLoading(false); return; }
+                    const res = await fetch(`${BASE_URL}/api/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password, provider, api_key })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) { showError(data.detail || 'Registration failed.'); return; }
+                    // 회원가입 후 자동 로그인
+                    const lr = await fetch(`${BASE_URL}/api/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const ld = await lr.json();
+                    if (lr.ok) {
+                        localStorage.setItem('pslw_user', JSON.stringify(ld));
+                        window.location.href = 'home.html';
+                    } else {
+                        showError('Account created! Please sign in.');
+                        toggleAuthMode();
+                    }
+                }
+            } catch {
+                showError('Cannot connect to server. Make sure the backend is running at localhost:8000.');
+            } finally {
+                setLoading(false);
+            }
+        });
     </script>
 </body></html>

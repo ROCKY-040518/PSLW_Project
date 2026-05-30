@@ -139,11 +139,8 @@
 <nav class="hidden md:flex flex-col h-full py-lg bg-surface-container-low fixed left-0 top-0 w-[280px] border-r border-outline-variant z-50">
 <!-- Header -->
 <div class="px-lg mb-xl flex items-center gap-sm cursor-pointer">
-<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold overflow-hidden shadow-sm border border-outline-variant">
-<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a young man with a neutral expression, wearing a dark collared shirt. He is set against a blurred, bright outdoor background that suggests a modern office exterior. The lighting is soft and natural, casting gentle highlights on his face. The overall mood is approachable, clean, and corporate." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBriRbLPa8ZZaFp61wLU8oSoGQ6_Jv2UD8UwRLHVA1cihFm9sTZTMyFcOHwYkONmcRdMoYHPOzsbeBKkmxRYjgQwpu3tkc6Rt4O49VWDxX3mZfK9pG3f7nNZrJff6l658c5jJTyJ_R7bRcCj92VkEbPLBsgQuPxXJLmVQJzWdMIF_vKah0r2D0c_uBBMSi7rTp6QiQG6U7n2qY7T9lziaoDSvJpvgHF9PLanmd2E0OBwuznQqPo9k0oin-bislZS5UdY4hYBSYjrAY"/>
-</div>
 <div>
-<h1 class="font-headline-md text-headline-md font-bold text-primary">PSLW App</h1>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">PSLW</h1>
 <p class="font-body-sm text-body-sm text-on-surface-variant">Invisible Intelligence</p>
 </div>
 </div>
@@ -181,7 +178,7 @@
 <span class="material-symbols-outlined">settings</span>
                 Settings
             </a>
-<a class="flex items-center gap-3 px-4 py-3 text-error font-label-md text-label-md hover:bg-error-container hover:text-on-error-container transition-colors duration-200 cursor-pointer active:scale-[0.98] rounded-lg" href="#">
+<a class="flex items-center gap-3 px-4 py-3 text-error font-label-md text-label-md hover:bg-error-container hover:text-on-error-container transition-colors duration-200 cursor-pointer active:scale-[0.98] rounded-lg" href="#" onclick="logout(); return false;">
 <span class="material-symbols-outlined">logout</span>
                 Logout
             </a>
@@ -220,6 +217,7 @@
 <h3 class="font-headline-md text-headline-md text-primary mb-xs">Analyzing and Summarizing...</h3>
 <p class="font-body-md text-body-md text-on-surface-variant">Extracting key insights and structural metadata.</p>
 </div>
+<input type="file" id="file-input" class="hidden" accept=".mp3,.wav,.m4a">
 </div>
 </section>
 <!-- Summaries Section -->
@@ -232,7 +230,7 @@
 </button>
 </div>
 <!-- Bento-style Card Grid -->
-<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-lg">
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-lg" id="summaries-grid">
 <!-- Card 1 -->
 <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300">
 <div>
@@ -324,33 +322,141 @@
 </section>
 </div>
 </main>
-<!-- Simple Script to demonstrate Upload Interaction -->
+<!-- API Integration Script -->
 <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const dropZone = document.getElementById('drop-zone');
-            const defaultState = document.getElementById('upload-default-state');
-            const loadingState = document.getElementById('upload-loading-state');
+    const BASE_URL = 'http://localhost:8000';
 
-            // Simulate file drop/click interaction
-            dropZone.addEventListener('click', () => {
-                if(defaultState.classList.contains('hidden')) return; // Already loading
-                
-                // Switch to loading
-                defaultState.classList.add('hidden');
-                loadingState.classList.remove('hidden');
-                loadingState.classList.add('flex');
-                dropZone.classList.add('upload-loading');
-                dropZone.classList.remove('hover:border-primary', 'hover:bg-primary-container/5');
+    const userRaw = localStorage.getItem('pslw_user');
+    if (!userRaw) { window.location.href = 'login.html'; }
+    const user = JSON.parse(userRaw || '{}');
 
-                // Reset after 3 seconds for demo purposes
-                setTimeout(() => {
-                    loadingState.classList.add('hidden');
-                    loadingState.classList.remove('flex');
-                    defaultState.classList.remove('hidden');
-                    dropZone.classList.remove('upload-loading');
-                    dropZone.classList.add('hover:border-primary', 'hover:bg-primary-container/5');
-                }, 3000);
-            });
+    function escHtml(str) {
+        const d = document.createElement('div');
+        d.appendChild(document.createTextNode(str || ''));
+        return d.innerHTML;
+    }
+
+    async function loadSummaries() {
+        try {
+            const res = await fetch(`${BASE_URL}/api/summaries/${user.username}`);
+            if (!res.ok) throw new Error();
+            const items = await res.json();
+            renderCards(items);
+        } catch { console.error('Failed to load summaries'); }
+    }
+
+    function renderCards(items) {
+        const grid = document.getElementById('summaries-grid');
+        if (!grid) return;
+        // 기존 카드 모두 제거
+        grid.innerHTML = '';
+        if (items.length === 0) {
+            grid.innerHTML = `
+                <div class="col-span-full text-center text-on-surface-variant py-xl">
+                    <span class="material-symbols-outlined text-[48px] mb-md block text-outline">inbox</span>
+                    <p class="font-body-md text-body-md">No summaries yet. Upload an audio file to get started.</p>
+                </div>`;
+            return;
+        }
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300';
+            card.id = `card-${item.id}`;
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-start mb-md">
+                        <div class="flex items-center gap-sm overflow-hidden">
+                            <div class="w-10 h-10 shrink-0 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mic</span>
+                            </div>
+                            <div class="overflow-hidden">
+                                <p class="font-label-md text-label-md text-on-surface truncate" title="${escHtml(item.filename)}">${escHtml(item.filename)}</p>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant">#${item.id}</p>
+                            </div>
+                        </div>
+                        <span class="ml-sm shrink-0 px-3 py-1 rounded-full bg-surface-container border border-outline-variant font-label-md text-label-md text-on-surface text-[12px]">Completed</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-sm pt-md border-t border-surface-container-high">
+                    <button onclick="viewSummary(${item.id})" class="flex-1 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-2 px-4 rounded-lg flex justify-center items-center gap-xs transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">visibility</span>
+                        View Details
+                    </button>
+                    <button onclick="deleteSummary(${item.id})" class="w-10 h-10 flex items-center justify-center text-outline hover:text-error hover:bg-error-container rounded-lg transition-colors" title="Delete">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                </div>`;
+            grid.appendChild(card);
         });
-    </script>
+    }
+
+    function viewSummary(id) { window.location.href = `summary.html?id=${id}`; }
+
+    async function deleteSummary(id) {
+        if (!confirm('이 요약을 삭제하시겠습니까?')) return;
+        try {
+            const res = await fetch(`${BASE_URL}/api/summary/${id}`, { method: 'DELETE' });
+            if (res.ok) { await loadSummaries(); }
+            else { alert('삭제 실패. 다시 시도해주세요.'); }
+        } catch { alert('서버 연결 오류.'); }
+    }
+
+    async function uploadFile(file) {
+        const defaultState = document.getElementById('upload-default-state');
+        const loadingState = document.getElementById('upload-loading-state');
+        const dropZone = document.getElementById('drop-zone');
+        defaultState.classList.add('hidden');
+        loadingState.classList.remove('hidden');
+        loadingState.classList.add('flex');
+        dropZone.classList.add('upload-loading');
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('username', user.username);
+            const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) { alert(`업로드 실패: ${data.detail}`); }
+            else { await loadSummaries(); }
+        } catch { alert('서버 연결 오류. 백엔드가 실행 중인지 확인하세요.'); }
+        finally {
+            loadingState.classList.add('hidden');
+            loadingState.classList.remove('flex');
+            defaultState.classList.remove('hidden');
+            dropZone.classList.remove('upload-loading');
+            document.getElementById('file-input').value = '';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('pslw_user');
+        window.location.href = 'login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const defaultState = document.getElementById('upload-default-state');
+
+        loadSummaries();
+
+        dropZone.addEventListener('click', () => {
+            if (!defaultState.classList.contains('hidden')) fileInput.click();
+        });
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-primary');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-primary');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-primary');
+            if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) uploadFile(fileInput.files[0]);
+        });
+    });
+</script>
 </body></html>

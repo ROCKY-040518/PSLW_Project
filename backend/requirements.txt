@@ -1,0 +1,23 @@
+# FastAPI 웹 프레임워크 및 서버
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+
+# OpenAI Whisper (로컬 STT)
+# ※ 버전 비고정: setuptools 빌드 호환성 문제 우회
+# PyTorch는 Whisper의 의존성입니다.
+# GPU 가속이 필요 없다면 CPU 전용 버전 사용 권장:
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+openai-whisper
+
+# ffmpeg 바이너리 번들 (시스템 ffmpeg 없이 Whisper MP3 처리 가능)
+imageio-ffmpeg
+
+# OpenAI GPT API
+openai>=1.50.0
+
+# Google Gemini API
+google-genai>=1.0.0
+
+# Pydantic (FastAPI 의존성)
+pydantic>=2.5.0
