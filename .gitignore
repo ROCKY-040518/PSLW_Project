@@ -1,0 +1,16 @@
+# Node.js (프론트엔드)
+node_modules/
+dist/
+build/
+.env
+
+# Python (백엔드)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+audio_summaries.db
+*.wav
+*.mp3
+*.m4a
