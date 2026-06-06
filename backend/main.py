@@ -144,6 +144,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# 추후 보안을 위해 실제 도메인으로 변경하세요
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
