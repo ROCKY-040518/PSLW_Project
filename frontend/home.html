@@ -211,7 +211,7 @@
 </div>
 <h3 class="font-headline-md text-headline-md text-on-surface dark:text-[#f8f9fa] mb-xs">Drag &amp; Drop audio files</h3>
 <p class="font-body-md text-body-md text-on-surface-variant dark:text-[#a0a0a0] mb-lg">or click to browse from your computer</p>
-<p class="font-mono-sm text-mono-sm text-outline">Supported formats: .wav, .mp3, .m4a (Max 500MB)</p>
+<p class="font-mono-sm text-mono-sm text-outline">Supported formats: .wav, .mp3, .m4a (Max 50MB)</p>
 </div>
 <!-- Loading State (Hidden by default, shown via JS for demo) -->
 <div class="hidden flex-col items-center justify-center py-xl" id="upload-loading-state">
@@ -994,21 +994,15 @@
         if (!confirm('이 요약을 삭제하시겠습니까?')) return;
         try {
             const res = await fetch(`${BASE_URL}/api/summary/${id}`, { method: 'DELETE' });
-            if (res.ok) { await loadSummaries();
-
-        // URL Parameter Routing for Upload
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('action') === 'upload') {
-            switchView('view-dashboard');
-            setTimeout(() => {
-                const fi = document.getElementById('file-input');
-                if (fi) fi.click();
-            }, 100);
-            window.history.replaceState({}, document.title, window.location.pathname);
+            if (res.ok) { 
+                await loadSummaries(); 
+                // 삭제 완료 후 현재 페이지(히스토리 또는 대시보드) 화면 새로고침
+            } else { 
+                alert('삭제 실패'); 
+            }
+        } catch { 
+            alert('서버 연결 오류'); 
         }
- }
-            else { alert('삭제 실패'); }
-        } catch { alert('서버 연결 오류'); }
     }
 
     // --- File Upload ---
@@ -1022,32 +1016,60 @@
         loadingState.classList.remove('hidden');
         loadingState.classList.add('flex');
         dropZone.classList.add('upload-loading');
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('username', user.username);
-            const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: formData });
-            if (!res.ok) { const data = await res.json(); alert(`업로드 실패: ${data.detail}`); }
-            else { await loadSummaries();
+        
+        const loadingText = loadingState.querySelector('h3');
+        if(loadingText) loadingText.textContent = "요약 중입니다. 잠시만 기다려주세요...";
 
-        // URL Parameter Routing for Upload
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('action') === 'upload') {
-            switchView('view-dashboard');
-            setTimeout(() => {
-                const fi = document.getElementById('file-input');
-                if (fi) fi.click();
-            }, 100);
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
- }
-        } catch { alert('서버 연결 오류.'); }
-        finally {
+        function resetUploadUI() {
             loadingState.classList.add('hidden');
             loadingState.classList.remove('flex');
             defaultState.classList.remove('hidden');
             dropZone.classList.remove('upload-loading');
             document.getElementById('file-input').value = '';
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('username', user.username);
+            const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: formData });
+            
+            if (!res.ok) { 
+                const data = await res.json(); 
+                alert(`업로드 실패: ${data.detail}`); 
+                resetUploadUI();
+                return;
+            }
+            
+            const data = await res.json();
+            const taskId = data.task_id;
+            
+            // Polling
+            const pollInterval = setInterval(async () => {
+                try {
+                    const statusRes = await fetch(`${BASE_URL}/api/status/${taskId}`);
+                    if(!statusRes.ok) throw new Error("Status check failed");
+                    const statusData = await statusRes.json();
+                    
+                    if (statusData.status === "completed") {
+                        clearInterval(pollInterval);
+                        await loadSummaries();
+                        resetUploadUI();
+                    } else if (statusData.status === "failed") {
+                        clearInterval(pollInterval);
+                        alert(`요약 실패: ${statusData.error}`);
+                        resetUploadUI();
+                    }
+                } catch(e) {
+                    clearInterval(pollInterval);
+                    alert("상태 확인 중 오류가 발생했습니다.");
+                    resetUploadUI();
+                }
+            }, 5000);
+
+        } catch (err) { 
+            alert('업로드 중 오류가 발생했습니다.'); 
+            resetUploadUI();
         }
     }
 
