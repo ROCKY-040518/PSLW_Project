@@ -13,14 +13,19 @@ from contextlib import asynccontextmanager
 import imageio_ffmpeg
 
 import whisper
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+import uuid
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, BackgroundTasks
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import datetime
+
 
 # ─────────────────────────────────────────────
 # 상수
 # ─────────────────────────────────────────────
 DB_PATH = "audio_summaries.db"
+task_db = {}
 
 SUMMARY_PROMPT = (
     "다음 텍스트는 음성 인식(STT) 변환 결과입니다. "
@@ -211,21 +216,40 @@ def summarize_with_openai(api_key: str, transcript: str) -> str:
         )
 
 
-def summarize_with_gemini(api_key: str, transcript: str) -> str:
-    """Google Gemini API를 사용하여 텍스트를 요약합니다."""
+import time # 파일 맨 위 import 쪽에 없다면 추가해주세요
+
+def summarize_with_gemini(api_key: str, transcript: str, retries: int = 3) -> str:
+    """Google Gemini API를 사용하여 텍스트를 요약합니다. (재시도 로직 추가)"""
     try:
         from google import genai  # type: ignore
         from google.genai import types  # type: ignore
 
         client = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=SUMMARY_PROMPT + transcript,
-            config=types.GenerateContentConfig(
-                temperature=0.3,
-            ),
-        )
-        return (response.text or "").strip()
+        
+        # 최대 retries(기본 3번) 횟수만큼 반복
+        for attempt in range(retries):
+            try:
+                response = client.models.generate_content(
+                    model="gemini-3.1-flash-lite", 
+                    contents=SUMMARY_PROMPT + transcript,
+                    config=types.GenerateContentConfig(
+                        temperature=0.3,
+                    ),
+                )
+                return (response.text or "").strip()
+            
+            except Exception as e:
+                if ("503" in str(e) or "429" in str(e)) and attempt < retries - 1:
+                    wait_time = attempt + 2 
+                    print(f"⚠️ Gemini 서버 혼잡 감지. {wait_time}초 후 재시도합니다... ({attempt+1}/{retries})")
+                    time.sleep(wait_time)
+                    continue 
+                else:
+                    raise e
+                    
+        # 👇 [여기에 추가!] for문이 다 돌았는데도 return이 안 된 경우를 위한 안전장치
+        return ""
+        
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Gemini API 호출 실패: {e}"
@@ -383,20 +407,81 @@ def delete_user_account(username: str):
 # ─────────────────────────────────────────────
 # 2. Core Processing API
 # ─────────────────────────────────────────────
+async def process_audio_task(task_id: str, username: str, filename: str, tmp_path: str, provider: str, api_key: str):
+    try:
+        # ── Whisper STT ───────────────────────────
+        if whisper_model is None:
+            raise Exception("Whisper 모델이 초기화되지 않았습니다.")
+
+        _ffmpeg_dir = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
+        os.environ["PATH"] = _ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+
+        result = whisper_model.transcribe(tmp_path)
+        transcript = str(result["text"]).strip()
+
+        # ── AI 요약 생성 ──────────────────────────
+        if provider == "openai":
+            summary = summarize_with_openai(api_key, transcript)
+        elif provider == "gemini":
+            summary = summarize_with_gemini(api_key, transcript)
+        else:
+            raise Exception(f"지원하지 않는 provider: {provider}")
+
+        # ── DB 저장 ───────────────────────────────
+        conn = get_conn()
+        try:
+            cursor = conn.cursor()
+            now = datetime.datetime.now().strftime("%b %d, %Y")
+            
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in ['.mp3', '.wav', '.m4a', '.flac']:
+                file_type = "Audio"
+            elif ext in ['.mp4', '.avi', '.mov']:
+                file_type = "Video"
+            else:
+                file_type = "Document"
+                
+            cursor.execute(
+                "INSERT INTO summaries (username, filename, transcript, summary, created_at, provider, type) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (username, filename, transcript, summary, now, provider, file_type),
+            )
+            cursor.execute(
+                "UPDATE users SET total_processed_files = total_processed_files + 1, total_api_requests = total_api_requests + 1 WHERE username = ?",
+                (username,)
+            )
+            conn.commit()
+            new_id = cursor.lastrowid
+            
+            task_db[task_id] = {
+                "status": "completed",
+                "result": {"id": new_id, "filename": filename, "message": "Success"}
+            }
+        except Exception as e:
+            task_db[task_id] = {"status": "failed", "error": f"DB 저장 실패: {e}"}
+        finally:
+            conn.close()
+
+    except Exception as e:
+        task_db[task_id] = {"status": "failed", "error": str(e)}
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+
+
 @app.post("/api/upload")
 async def upload_audio(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     username: str = Form(...),
 ):
-    """오디오 파일을 업로드받아 Whisper STT 후 AI 요약을 생성하고 DB에 저장합니다."""
-
-    # ── 사용자 정보 조회 ──────────────────────
+    """오디오 파일을 업로드받아 백그라운드에서 처리합니다."""
     conn = get_conn()
     try:
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT provider, api_key FROM users WHERE username = ?", (username,)
-        )
+        cursor.execute("SELECT provider, api_key FROM users WHERE username = ?", (username,))
         row = cursor.fetchone()
     except Exception as e:
         conn.close()
@@ -406,16 +491,19 @@ async def upload_audio(
         conn.close()
         raise HTTPException(status_code=400, detail="등록되지 않은 사용자입니다.")
 
-    provider: str = row["provider"]
-    api_key: str = row["api_key"]
+    provider = row["provider"]
+    api_key = row["api_key"]
 
     if not api_key:
         conn.close()
         raise HTTPException(status_code=400, detail="API 키가 설정되지 않았습니다.")
+        
+    conn.close()
 
-    # ── 임시 파일 저장 ────────────────────────
-    suffix = os.path.splitext(file.filename or "audio")[1] or ".tmp"
-    tmp_path: str = ""
+    # 안전한 파일명 처리 (타입 에러 해결)
+    safe_filename = file.filename or "unknown.tmp"
+    suffix = os.path.splitext(safe_filename)[1] or ".tmp"
+    
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             tmp_path = tmp.name
@@ -424,64 +512,28 @@ async def upload_audio(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"임시 파일 저장 실패: {e}")
 
-    # ── Whisper STT ───────────────────────────
-    try:
-        if whisper_model is None:
-            raise HTTPException(status_code=500, detail="Whisper 모델이 초기화되지 않았습니다.")
+    task_id = str(uuid.uuid4())
+    task_db[task_id] = {"status": "processing"}
 
-        # imageio-ffmpeg 번들 바이너리를 PATH에 동적 추가
-        _ffmpeg_dir = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
-        os.environ["PATH"] = _ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+    background_tasks.add_task(
+        process_audio_task,
+        task_id,
+        username,
+        safe_filename,
+        tmp_path,
+        provider,
+        api_key
+    )
 
-        result = whisper_model.transcribe(tmp_path)
-        transcript: str = str(result["text"]).strip()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Whisper 음성 인식 실패: {e}")
-    finally:
-        if tmp_path and os.path.exists(tmp_path):
-            try:
-                os.remove(tmp_path)
-            except OSError:
-                pass  # 삭제 실패해도 계속 진행
+    return {"task_id": task_id, "message": "Processing started"}
 
-    # ── AI 요약 생성 ──────────────────────────
-    if provider == "openai":
-        summary = summarize_with_openai(api_key, transcript)
-    elif provider == "gemini":
-        summary = summarize_with_gemini(api_key, transcript)
-    else:
-        conn.close()
-        raise HTTPException(status_code=400, detail=f"지원하지 않는 provider: {provider}")
 
-    # ── DB 저장 ───────────────────────────────
-    try:
-        import datetime
-        now = datetime.datetime.now().strftime("%b %d, %Y")
-        
-        ext = os.path.splitext(file.filename or "audio")[1].lower()
-        if ext in ['.mp3', '.wav', '.m4a', '.flac']:
-            file_type = "Audio"
-        elif ext in ['.mp4', '.avi', '.mov']:
-            file_type = "Video"
-        else:
-            file_type = "Document"
-            
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO summaries (username, filename, transcript, summary, created_at, provider, type) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (username, file.filename or "unknown", transcript, summary, now, provider, file_type),
-        )
-        cursor.execute(
-            "UPDATE users SET total_processed_files = total_processed_files + 1, total_api_requests = total_api_requests + 1 WHERE username = ?",
-            (username,)
-        )
-        conn.commit()
-        new_id = cursor.lastrowid
-        return {"id": new_id, "filename": file.filename, "message": "Success"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"DB 저장 실패: {e}")
-    finally:
-        conn.close()
+@app.get("/api/status/{task_id}")
+def get_task_status(task_id: str):
+    if task_id not in task_db:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task_db[task_id]
+
 
 
 # ─────────────────────────────────────────────
@@ -622,6 +674,38 @@ def get_usage(username: str):
     finally:
         conn.close()
 
+
+# ─────────────────────────────────────────────
+# 정적 HTML 파일 제공 라우터
+@app.get("/")
+@app.get("/login.html")
+def serve_login():
+    base_dir = os.path.dirname(__file__)
+    path = os.path.join(base_dir, "..", "frontend", "login.html")
+    path = os.path.normpath(path)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="login.html을 찾을 수 없습니다.")
+    return FileResponse(path, media_type="text/html")
+
+@app.get("/home")
+@app.get("/home.html")
+def serve_home():
+    base_dir = os.path.dirname(__file__)
+    path = os.path.join(base_dir, "..", "frontend", "home.html")
+    path = os.path.normpath(path)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="home.html을 찾을 수 없습니다.")
+    return FileResponse(path, media_type="text/html")
+
+@app.get("/summary")
+@app.get("/summary.html")
+def serve_summary():
+    base_dir = os.path.dirname(__file__)
+    path = os.path.join(base_dir, "..", "frontend", "summary.html")
+    path = os.path.normpath(path)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="summary.html을 찾을 수 없습니다.")
+    return FileResponse(path, media_type="text/html")
 
 # ─────────────────────────────────────────────
 # 실행 진입점
