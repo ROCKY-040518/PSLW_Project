@@ -14,3 +14,4 @@ audio_summaries.db
 *.wav
 *.mp3
 *.m4a
+*.log
