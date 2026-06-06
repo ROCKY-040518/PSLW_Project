@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="en"><head>
 <meta charset="utf-8"/>
@@ -133,20 +133,26 @@
             }
         }
     </script>
+    
+<script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
 </head>
-<body class="bg-background text-on-surface font-body-md antialiased flex h-screen overflow-hidden">
+<body class="bg-background dark:bg-[#121212] text-on-surface dark:text-[#f8f9fa] font-body-md antialiased flex h-screen overflow-hidden">
 <!-- SideNavBar Component -->
-<nav class="hidden md:flex flex-col h-full py-lg bg-surface-container-low fixed left-0 top-0 w-[280px] border-r border-outline-variant z-50">
+<nav class="hidden md:flex flex-col h-full py-lg bg-surface-container-low dark:bg-[#1e1e1e] fixed left-0 top-0 w-[280px] border-r border-outline-variant dark:border-[#333333] z-50">
 <!-- Header -->
 <div class="px-lg mb-xl flex items-center gap-sm cursor-pointer">
 <div>
 <h1 class="font-headline-md text-headline-md font-bold text-primary">PSLW</h1>
-<p class="font-body-sm text-body-sm text-on-surface-variant">Invisible Intelligence</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Invisible Intelligence</p>
 </div>
 </div>
 <!-- CTA -->
 <div class="px-lg mb-xl">
-<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-3 rounded-lg flex items-center justify-center gap-2 transition-transform cursor-pointer active:scale-[0.98] shadow-sm">
+<button id="btn-upload-audio" class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-3 rounded-lg flex items-center justify-center gap-2 transition-transform cursor-pointer active:scale-[0.98] shadow-sm">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
                 Upload Audio
             </button>
@@ -154,56 +160,57 @@
 <!-- Main Nav Tabs -->
 <div class="flex-1 overflow-y-auto flex flex-col gap-xs">
 <!-- Active Tab: Dashboard -->
-<a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-highest border-l-4 border-primary font-label-md text-label-md cursor-pointer active:scale-[0.98] transition-transform" href="#">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+            <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-highest border-l-4 border-primary font-label-md text-label-md cursor-pointer active:scale-[0.98] transition-transform" href="#" onclick="switchView('view-dashboard'); return false;">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
                 Dashboard
             </a>
 <!-- Inactive Tabs -->
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98]" href="#">
-<span class="material-symbols-outlined">settings_input_component</span>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-[#a0a0a0] font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98]" href="#" onclick="switchView('view-api-settings'); return false;">
+                <span class="material-symbols-outlined">settings_input_component</span>
                 API Settings
             </a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98]" href="#">
-<span class="material-symbols-outlined">history</span>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-[#a0a0a0] font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98]" href="#" onclick="switchView('view-history'); return false;">
+                <span class="material-symbols-outlined">history</span>
                 History
             </a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98]" href="#">
-<span class="material-symbols-outlined">bar_chart</span>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-[#a0a0a0] font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98]" href="#" onclick="switchView('view-usage'); return false;">
+                <span class="material-symbols-outlined">bar_chart</span>
                 Usage
             </a>
 </div>
 <!-- Footer Tabs -->
 <div class="mt-auto px-xs flex flex-col gap-xs pt-lg border-t border-outline-variant mx-lg">
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98] rounded-lg" href="#">
-<span class="material-symbols-outlined">settings</span>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-[#a0a0a0] font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98] rounded-lg" href="#" onclick="switchView('view-settings'); return false;">
+                <span class="material-symbols-outlined">settings</span>
                 Settings
             </a>
-<a class="flex items-center gap-3 px-4 py-3 text-error font-label-md text-label-md hover:bg-error-container hover:text-on-error-container transition-colors duration-200 cursor-pointer active:scale-[0.98] rounded-lg" href="#" onclick="logout(); return false;">
-<span class="material-symbols-outlined">logout</span>
+            <a class="flex items-center gap-3 px-4 py-3 text-error font-label-md text-label-md hover:bg-error-container hover:text-on-error-container transition-colors duration-200 cursor-pointer active:scale-[0.98] rounded-lg" href="#" onclick="logout(); return false;">
+                <span class="material-symbols-outlined">logout</span>
                 Logout
             </a>
 </div>
 </nav>
 <!-- Main Content Area -->
-<main class="flex-1 ml-0 md:ml-[280px] h-full overflow-y-auto bg-surface">
+<main class="flex-1 ml-0 md:ml-[280px] h-full overflow-y-auto bg-surface dark:bg-[#121212]">
 <div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-xl">
 <!-- Page Header -->
 <div class="mb-xl flex justify-between items-end">
 <div>
-<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Overview</h2>
-<p class="font-body-md text-body-md text-on-surface-variant">Upload new audio or manage your recent transcriptions.</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface dark:text-[#f8f9fa] mb-xs">Overview</h2>
+<p class="font-body-md text-body-md text-on-surface-variant dark:text-[#a0a0a0]">Upload new audio or manage your recent transcriptions.</p>
 </div>
 </div>
 <!-- Drag & Drop Upload Zone -->
-<section class="mb-xxl">
-<div class="relative group border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest p-xl text-center transition-all duration-300 hover:border-primary hover:bg-primary-container/5 cursor-pointer" id="drop-zone">
+<section id="view-dashboard" class="block">
+            <section class="mb-xxl">
+                <div class="relative group border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-lowest p-xl text-center transition-all duration-300 hover:border-primary hover:bg-primary-container/5 cursor-pointer dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200" id="drop-zone">
 <!-- Default State -->
 <div class="flex flex-col items-center justify-center py-xl" id="upload-default-state">
 <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-lg text-primary group-hover:scale-110 transition-transform duration-300">
 <span class="material-symbols-outlined text-[32px]">upload_file</span>
 </div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Drag &amp; Drop audio files</h3>
-<p class="font-body-md text-body-md text-on-surface-variant mb-lg">or click to browse from your computer</p>
+<h3 class="font-headline-md text-headline-md text-on-surface dark:text-[#f8f9fa] mb-xs">Drag &amp; Drop audio files</h3>
+<p class="font-body-md text-body-md text-on-surface-variant dark:text-[#a0a0a0] mb-lg">or click to browse from your computer</p>
 <p class="font-mono-sm text-mono-sm text-outline">Supported formats: .wav, .mp3, .m4a (Max 500MB)</p>
 </div>
 <!-- Loading State (Hidden by default, shown via JS for demo) -->
@@ -215,15 +222,15 @@
 </svg>
 </div>
 <h3 class="font-headline-md text-headline-md text-primary mb-xs">Analyzing and Summarizing...</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Extracting key insights and structural metadata.</p>
+<p class="font-body-md text-body-md text-on-surface-variant dark:text-[#a0a0a0]">Extracting key insights and structural metadata.</p>
 </div>
-<input type="file" id="file-input" class="hidden" accept=".mp3,.wav,.m4a">
+<input type="file" id="file-input" class="hidden  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200" accept=".mp3,.wav,.m4a">
 </div>
 </section>
 <!-- Summaries Section -->
 <section>
 <div class="flex items-center justify-between mb-lg">
-<h3 class="font-headline-md text-headline-md text-on-surface">Recent Summaries</h3>
+<h3 class="font-headline-md text-headline-md text-on-surface dark:text-[#f8f9fa]">Recent Summaries</h3>
 <button class="font-label-md text-label-md text-primary hover:text-primary-container flex items-center gap-xs">
                         View All
                         <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -232,7 +239,7 @@
 <!-- Bento-style Card Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-lg" id="summaries-grid">
 <!-- Card 1 -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300 dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
 <div>
 <div class="flex justify-between items-start mb-md">
 <div class="flex items-center gap-sm">
@@ -240,13 +247,13 @@
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mic</span>
 </div>
 <div>
-<p class="font-label-md text-label-md text-on-surface">Meeting_Notes_Q3.wav</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant">Today, 10:42 AM</p>
+<p class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa]">Meeting_Notes_Q3.wav</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Today, 10:42 AM</p>
 </div>
 </div>
-<span class="px-3 py-1 rounded-full bg-surface-container border border-outline-variant font-label-md text-label-md text-on-surface text-[12px]">Completed</span>
+<span class="px-3 py-1 rounded-full bg-surface-container dark:bg-[#2a2a2a] border border-outline-variant dark:border-[#444444] font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] text-[12px]">Completed</span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-lg line-clamp-2">
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0] mb-lg line-clamp-2">
                                 Discussion focused on Q3 targets, primarily shifting resources towards the new AI pipeline and deprecating legacy storage infrastructure.
                             </p>
 </div>
@@ -261,7 +268,7 @@
 </div>
 </div>
 <!-- Card 2 -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300 dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
 <div>
 <div class="flex justify-between items-start mb-md">
 <div class="flex items-center gap-sm">
@@ -269,13 +276,13 @@
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mic</span>
 </div>
 <div>
-<p class="font-label-md text-label-md text-on-surface">Client_Interview_Jane_Doe.mp3</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant">Yesterday, 14:15 PM</p>
+<p class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa]">Client_Interview_Jane_Doe.mp3</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Yesterday, 14:15 PM</p>
 </div>
 </div>
-<span class="px-3 py-1 rounded-full bg-surface-container border border-outline-variant font-label-md text-label-md text-on-surface text-[12px]">Completed</span>
+<span class="px-3 py-1 rounded-full bg-surface-container dark:bg-[#2a2a2a] border border-outline-variant dark:border-[#444444] font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] text-[12px]">Completed</span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-lg line-clamp-2">
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0] mb-lg line-clamp-2">
                                 Jane expressed friction with the onboarding process, specifically step 3. Suggested adding tooltips and a progress indicator.
                             </p>
 </div>
@@ -290,7 +297,7 @@
 </div>
 </div>
 <!-- Card 3 -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300 dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
 <div>
 <div class="flex justify-between items-start mb-md">
 <div class="flex items-center gap-sm">
@@ -298,13 +305,13 @@
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mic</span>
 </div>
 <div>
-<p class="font-label-md text-label-md text-on-surface">Architecture_Sync.m4a</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant">Oct 24, 09:00 AM</p>
+<p class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa]">Architecture_Sync.m4a</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Oct 24, 09:00 AM</p>
 </div>
 </div>
-<span class="px-3 py-1 rounded-full bg-surface-container border border-outline-variant font-label-md text-label-md text-on-surface text-[12px]">Completed</span>
+<span class="px-3 py-1 rounded-full bg-surface-container dark:bg-[#2a2a2a] border border-outline-variant dark:border-[#444444] font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] text-[12px]">Completed</span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-lg line-clamp-2">
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0] mb-lg line-clamp-2">
                                 Finalized the microservices boundary map. Authentication will remain a monolithic service until Q1 next year.
                             </p>
 </div>
@@ -320,7 +327,470 @@
 </div>
 </div>
 </section>
-</div>
+            </section>
+            <!-- ===== API Settings View ===== -->
+            <section id="view-api-settings" class="hidden">
+                <div class="max-w-[800px] mx-auto mt-xl">
+                    <div class="mb-xl">
+                        <h2 class="font-headline-lg text-headline-lg text-on-surface dark:text-[#f8f9fa] mb-sm">API Settings</h2>
+                        <p class="font-body-lg text-body-lg text-on-surface-variant dark:text-[#a0a0a0]">Configure your language model providers to power PSLW's intelligent processing pipeline. Connections are encrypted and keys are stored securely.</p>
+                    </div>
+                    <div class="bg-surface dark:bg-[#1e1e1e] border border-outline-variant dark:border-gray-800 rounded-xl p-xl shadow-sm">
+                        <!-- Form Section -->
+                        <div class="flex flex-col gap-xl">
+                            <!-- Provider Selection -->
+                            <div class="flex flex-col gap-sm">
+                                <label class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa]" for="api-provider">Model Provider</label>
+                                <div class="relative">
+                                    <select class="w-full bg-surface-bright border border-outline-variant text-on-surface rounded-lg px-4 py-3 font-body-md text-body-md appearance-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-shadow  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200" id="api-provider">
+                                        <option value="openai">OpenAI (gpt-4o-mini)</option>
+                                        <option value="gemini">Google Gemini (gemini-2.5-flash)</option>
+                                    </select>
+                                    <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-[#a0a0a0] pointer-events-none">expand_more</span>
+                                </div>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0] mt-1">Select the processing engine for transcription and summarization tasks.</p>
+                            </div>
+                            <!-- API Key Input -->
+                            <div class="flex flex-col gap-sm">
+                                <label class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa]" for="apiKey">API Key</label>
+                                <div class="relative flex items-center">
+                                    <span class="material-symbols-outlined absolute left-4 text-on-surface-variant dark:text-[#a0a0a0]">key</span>
+                                    <input class="w-full bg-surface-bright border border-outline-variant text-on-surface rounded-lg pl-12 pr-12 py-3 font-mono-sm text-mono-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-shadow  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200" id="apiKey" placeholder="sk-..." type="password"/>
+                                    <button class="absolute right-4 text-on-surface-variant dark:text-[#a0a0a0] hover:text-primary transition-colors focus:outline-none" id="togglePassword" type="button">
+                                        <span class="material-symbols-outlined" id="toggleIcon">visibility</span>
+                                    </button>
+                                </div>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0] mt-1">Your key will not be displayed again after saving.</p>
+                            </div>
+                        </div>
+                        <!-- Divider -->
+                        <div class="h-px w-full bg-surface-container mt-xl mb-lg"></div>
+                        <!-- Actions -->
+                        <div class="flex items-center justify-between">
+                            <div id="api-status-badge" class="flex items-center gap-2 text-secondary font-label-md text-label-md bg-secondary-container/20 px-3 py-1.5 rounded-full border border-secondary/20">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span>
+                                Status: Not Connected
+                            </div>
+                            <div class="flex gap-md">
+                                <button id="btn-test-connection" class="px-6 py-2.5 rounded-lg border border-primary text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                    Test Connection
+                                </button>
+                                <button id="btn-save-api" class="px-6 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-surface-tint transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== History View ===== -->
+            <section id="view-history" class="hidden">
+                <div class="flex flex-col gap-lg h-full">
+                    <!-- Page Header -->
+                    <div class="flex flex-col gap-xs">
+                        <h2 class="font-headline-lg text-headline-lg text-on-surface dark:text-[#f8f9fa]">Data Processing History</h2>
+                        <p class="font-body-md text-body-md text-on-surface-variant dark:text-[#a0a0a0]">Review, search, and manage your past transcripts and executive summaries.</p>
+                    </div>
+                    <!-- Toolbar: Search & Filters -->
+                    <div class="flex flex-wrap items-center justify-between gap-md bg-surface-container-lowest p-md rounded-xl border border-outline-variant dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                        <!-- Search -->
+                        <div class="relative w-full md:w-96">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">search</span>
+                            </div>
+                            <input id="history-search" class="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-outline  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200" placeholder="Search filenames or IDs..." type="text"/>
+                        </div>
+                        <!-- Filters -->
+                        <div class="flex items-center gap-sm">
+                            <select id="history-filter-date" class="px-3 py-2 bg-surface border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant focus:outline-none focus:border-primary hover:border-primary transition-colors cursor-pointer appearance-none  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                                <option value="">All Dates</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                            </select>
+                            <select id="history-filter-provider" class="px-3 py-2 bg-surface border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant focus:outline-none focus:border-primary hover:border-primary transition-colors cursor-pointer appearance-none  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                                <option value="">All Providers</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="gemini">Gemini</option>
+                            </select>
+                            <select id="history-filter-type" class="px-3 py-2 bg-surface border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant focus:outline-none focus:border-primary hover:border-primary transition-colors cursor-pointer appearance-none  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                                <option value="">All Types</option>
+                                <option value="transcript">Transcript</option>
+                                <option value="summary">Summary</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Data Table Container -->
+                    <div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.02)] dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-surface-container-low dark:bg-[#252525] border-b border-outline-variant dark:border-gray-700">
+                                    <tr>
+                                        <th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0] font-semibold w-24">ID</th>
+                                        <th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0] font-semibold">Filename</th>
+                                        <th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0] font-semibold w-40">Date</th>
+                                        <th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0] font-semibold w-32">Provider</th>
+                                        <th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0] font-semibold w-32">Type</th>
+                                        <th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0] font-semibold text-right w-24">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-tbody" class="divide-y divide-surface-container-high">
+                                    <!-- Row 1 -->
+                                    <tr class="hover:bg-surface-bright transition-colors group">
+                                        <td class="py-4 px-4 font-mono-sm text-mono-sm text-outline dark:text-[#cccccc]">#TR-8902</td>
+                                        <td class="py-4 px-4 dark:text-[#cccccc]">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded bg-primary-container/20 flex items-center justify-center text-primary">
+                                                    <span class="material-symbols-outlined" style="font-size: 18px;">description</span>
+                                                </div>
+                                                <div>
+                                                    <p class="font-body-md text-body-md font-medium text-on-surface dark:text-[#f8f9fa] group-hover:text-primary transition-colors">Q3_Earnings_Call_Final.mp3</p>
+                                                    <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">45.2 MB ??01:12:34</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-4 font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Oct 24, 2023<br/><span class="text-outline text-xs">14:30 EST</span></td>
+                                        <td class="py-4 px-4 dark:text-[#cccccc]">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-md bg-surface-container text-on-surface dark:text-[#f8f9fa] font-label-md text-[12px]">OpenAI Whisper</span>
+                                        </td>
+                                        <td class="py-4 px-4 dark:text-[#cccccc]">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container/30 text-secondary border border-secondary/20 font-label-md text-[12px]">
+                                                <span class="material-symbols-outlined" style="font-size: 14px;">subject</span>
+                                                Transcript
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-4 text-right dark:text-[#cccccc]">
+                                            <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button class="p-1.5 text-on-surface-variant dark:text-[#a0a0a0] hover:text-primary hover:bg-surface-container rounded transition-colors" title="View Details">
+                                                    <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                                                </button>
+                                                <button class="p-1.5 text-on-surface-variant dark:text-[#a0a0a0] hover:text-error hover:bg-error-container/20 rounded transition-colors" title="Delete">
+                                                    <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Row 2 -->
+                                    <tr class="hover:bg-surface-bright transition-colors group">
+                                        <td class="py-4 px-4 font-mono-sm text-mono-sm text-outline dark:text-[#cccccc]">#EX-8901</td>
+                                        <td class="py-4 px-4 dark:text-[#cccccc]">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+                                                    <span class="material-symbols-outlined" style="font-size: 18px;">summarize</span>
+                                                </div>
+                                                <div>
+                                                    <p class="font-body-md text-body-md font-medium text-on-surface dark:text-[#f8f9fa] group-hover:text-primary transition-colors">Project_Apollo_Kickoff.docx</p>
+                                                    <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Extracted from Meeting Video</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-4 font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Oct 23, 2023<br/><span class="text-outline text-xs">09:15 EST</span></td>
+                                        <td class="py-4 px-4 dark:text-[#cccccc]">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-md bg-surface-container text-on-surface dark:text-[#f8f9fa] font-label-md text-[12px]">Anthropic Claude</span>
+                                        </td>
+                                        <td class="py-4 px-4 dark:text-[#cccccc]">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-container/20 text-primary border border-primary/20 font-label-md text-[12px]">
+                                                <span class="material-symbols-outlined" style="font-size: 14px;">bolt</span>
+                                                Exec Summary
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-4 text-right dark:text-[#cccccc]">
+                                            <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button class="p-1.5 text-on-surface-variant dark:text-[#a0a0a0] hover:text-primary hover:bg-surface-container rounded transition-colors" title="View Details">
+                                                    <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                                                </button>
+                                                <button class="p-1.5 text-on-surface-variant dark:text-[#a0a0a0] hover:text-error hover:bg-error-container/20 rounded transition-colors" title="Delete">
+                                                    <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Row 3 -->
+                                    <tr class="hover:bg-surface-bright transition-colors group">
+                                        <td class="py-4 px-4 font-mono-sm text-mono-sm text-outline dark:text-[#cccccc]">#TR-8895</td>
+                                        <td class="py-4 px-4 dark:text-[#cccccc]">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded bg-primary-container/20 flex items-center justify-center text-primary">
+                                                    <span class="material-symbols-outlined" style="font-size: 18px;">description</span>
+                                                </div>
+                                                <div>
+                                                    <p class="font-body-md text-body-md font-medium text-on-surface dark:text-[#f8f9fa] group-hover:text-primary transition-colors">User_Interview_04.wav</p>
+                                                    <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">12.1 MB ??00:22:10</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-4 font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Oct 21, 2023<br/><span class="text-outline text-xs">11:05 EST</span></td>
+                                        <td class="py-4 px-4 dark:text-[#cccccc]">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-md bg-surface-container text-on-surface dark:text-[#f8f9fa] font-label-md text-[12px]">Deepgram</span>
+                                        </td>
+                                        <td class="py-4 px-4 dark:text-[#cccccc]">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container/30 text-secondary border border-secondary/20 font-label-md text-[12px]">
+                                                <span class="material-symbols-outlined" style="font-size: 14px;">subject</span>
+                                                Transcript
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-4 text-right dark:text-[#cccccc]">
+                                            <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button class="p-1.5 text-on-surface-variant dark:text-[#a0a0a0] hover:text-primary hover:bg-surface-container rounded transition-colors" title="View Details">
+                                                    <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                                                </button>
+                                                <button class="p-1.5 text-on-surface-variant dark:text-[#a0a0a0] hover:text-error hover:bg-error-container/20 rounded transition-colors" title="Delete">
+                                                    <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Pagination -->
+                        <div id="history-pagination" class="mt-auto px-6 py-4 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                            <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Showing <span class="font-medium text-on-surface dark:text-[#f8f9fa]">1</span> to <span class="font-medium text-on-surface dark:text-[#f8f9fa]">3</span> of <span class="font-medium text-on-surface dark:text-[#f8f9fa]">124</span> results</p>
+                            <div class="flex items-center gap-1">
+                                <button class="p-2 text-outline hover:text-on-surface dark:text-[#f8f9fa] hover:bg-surface-container rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled="">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">chevron_left</span>
+                                </button>
+                                <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-label-md text-label-md">1</button>
+                                <button class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant dark:text-[#a0a0a0] hover:bg-surface-container font-label-md text-label-md transition-colors">2</button>
+                                <button class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant dark:text-[#a0a0a0] hover:bg-surface-container font-label-md text-label-md transition-colors">3</button>
+                                <span class="w-8 h-8 flex items-center justify-center text-outline">...</span>
+                                <button class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant dark:text-[#a0a0a0] hover:bg-surface-container font-label-md text-label-md transition-colors">12</button>
+                                <button class="p-2 text-on-surface-variant dark:text-[#a0a0a0] hover:text-on-surface dark:text-[#f8f9fa] hover:bg-surface-container rounded transition-colors">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== Usage View ===== -->
+            <section id="view-usage" class="hidden">
+                <div class="mb-xl flex justify-between items-end">
+                    <div>
+                        <h2 class="font-headline-lg text-headline-lg text-on-surface dark:text-[#f8f9fa] mb-2">Usage &amp; Analytics</h2>
+                        <p class="font-body-md text-body-md text-on-surface-variant dark:text-[#a0a0a0]">Monitor your API consumption and processing metrics.</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                        <span class="font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0]">Billing Cycle:</span>
+                        <span class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] font-semibold">Oct 1 - Oct 31</span>
+                    </div>
+                </div>
+                <!-- KPI Cards Grid -->
+                <div class="grid grid-cols-12 gap-gutter mb-gutter">
+                    <!-- Card 1 -->
+                    <div class="col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col justify-between h-32 dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                        <div class="flex justify-between items-start">
+                            <span class="font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0]">Total Audio Processed</span>
+                            <span class="material-symbols-outlined text-outline">audio_file</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="usage-total-count" class="font-display-lg text-display-lg text-on-surface dark:text-[#f8f9fa]">-</span>
+                            <span class="font-body-md text-body-md text-on-surface-variant dark:text-[#a0a0a0]">Files</span>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col justify-between h-32 dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                        <div class="flex justify-between items-start">
+                            <span class="font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0]">API Requests This Month</span>
+                            <span class="material-symbols-outlined text-outline">api</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="usage-monthly-count" class="font-display-lg text-display-lg text-on-surface dark:text-[#f8f9fa]">-</span>
+                            <span class="font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0]">This Month</span>
+                        </div>
+                    </div>
+                    <!-- Card 3: Warning State -->
+                    <div id="usage-quota-card" class="col-span-4 bg-error-container/20 border border-error rounded-xl p-6 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-error/10 rounded-bl-full"></div>
+                        <div class="flex justify-between items-start relative z-10">
+                            <span id="usage-quota-text" class="font-label-md text-label-md text-error font-semibold">Current Quota Status</span>
+                            <span id="usage-quota-icon" class="material-symbols-outlined text-error">warning</span>
+                        </div>
+                        <div class="flex flex-col gap-2 relative z-10">
+                            <div class="flex justify-between items-baseline">
+                                <span id="usage-quota-percent" class="font-display-lg text-display-lg text-error">-</span>
+                                <span id="usage-quota-label" class="font-label-md text-label-md text-error">Loading...</span>
+                            </div>
+                            <div id="usage-quota-bg" class="w-full bg-error-container rounded-full h-1.5">
+                                <div id="usage-quota-bar" class="bg-error h-1.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Analytics Bento Lower Section -->
+                <div class="grid grid-cols-12 gap-gutter">
+                    <!-- Main Chart Area -->
+                    <div class="col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm h-96 flex flex-col dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-headline-md text-headline-md text-on-surface dark:text-[#f8f9fa]">Daily API Usage</h3>
+                            <div class="flex gap-2">
+                                <button class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] bg-surface-variant px-3 py-1 rounded">7D</button>
+                                <button class="font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0] hover:bg-surface-variant px-3 py-1 rounded transition-colors">30D</button>
+                            </div>
+                        </div>
+                        <!-- CSS Mocked Bar Chart -->
+                        <div id="usage-chart-container" class="flex-1 flex items-end justify-between gap-2 pt-8 border-b border-outline-variant pb-2 relative">
+                            <!-- Y-Axis labels mocked -->
+                            <div class="absolute left-0 top-0 h-full flex flex-col justify-between text-outline font-mono-sm text-mono-sm pb-2 opacity-50 -ml-8">
+                                <span>10k</span>
+                                <span>5k</span>
+                                <span>0</span>
+                            </div>
+                            <!-- Bars -->
+                            <div class="w-full bg-primary-container hover:bg-primary transition-colors rounded-t-sm relative group" style="height: 40%">
+                                <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface font-mono-sm text-mono-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">4.2k</div>
+                            </div>
+                            <div class="w-full bg-primary-container hover:bg-primary transition-colors rounded-t-sm relative group" style="height: 65%"></div>
+                            <div class="w-full bg-primary hover:bg-primary transition-colors rounded-t-sm relative group" style="height: 85%"></div>
+                            <div class="w-full bg-primary-container hover:bg-primary transition-colors rounded-t-sm relative group" style="height: 50%"></div>
+                            <div class="w-full bg-primary-container hover:bg-primary transition-colors rounded-t-sm relative group" style="height: 70%"></div>
+                            <div class="w-full bg-primary-container hover:bg-primary transition-colors rounded-t-sm relative group" style="height: 45%"></div>
+                            <div class="w-full bg-primary-container hover:bg-primary transition-colors rounded-t-sm relative group" style="height: 90%"></div>
+                        </div>
+                        <!-- X-Axis Labels -->
+                        <div class="flex justify-between mt-4 font-mono-sm text-mono-sm text-outline">
+                            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                        </div>
+                    </div>
+                    <!-- Model Usage Breakdown -->
+                    <div class="col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm h-96 flex flex-col dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                        <h3 class="font-headline-md text-headline-md text-on-surface dark:text-[#f8f9fa] mb-6">Model Distribution</h3>
+                        <div id="usage-model-distribution" class="flex flex-col gap-6 flex-1 justify-center">
+                            <!-- Progress Item 1 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-error"></div> Gemini Pro
+                                    </span>
+                                    <span class="font-mono-sm text-mono-sm text-error">85%</span>
+                                </div>
+                                <div class="w-full bg-surface-container-high rounded-full h-2">
+                                    <div class="bg-error h-2 rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <!-- Progress Item 2 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-primary"></div> Whisper v3
+                                    </span>
+                                    <span class="font-mono-sm text-mono-sm text-on-surface-variant dark:text-[#a0a0a0]">42%</span>
+                                </div>
+                                <div class="w-full bg-surface-container-high rounded-full h-2">
+                                    <div class="bg-primary h-2 rounded-full" style="width: 42%"></div>
+                                </div>
+                            </div>
+                            <!-- Progress Item 3 -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-secondary"></div> Claude 3.5 Sonnet
+                                    </span>
+                                    <span class="font-mono-sm text-mono-sm text-on-surface-variant dark:text-[#a0a0a0]">18%</span>
+                                </div>
+                                <div class="w-full bg-surface-container-high rounded-full h-2">
+                                    <div class="bg-secondary h-2 rounded-full" style="width: 18%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== Settings View ===== -->
+            <section id="view-settings" class="hidden">
+                <div class="max-w-[800px] mx-auto space-y-xl">
+                    <!-- Page Header -->
+                    <div>
+                        <h2 class="font-headline-lg text-headline-lg text-on-surface dark:text-[#f8f9fa] mb-2">General Settings</h2>
+                        <p class="font-body-md text-body-md text-on-surface-variant dark:text-[#a0a0a0]">Manage your account profile, preferences, and security settings.</p>
+                    </div>
+                    <!-- Profile Form Card -->
+                    <section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                        <div class="mb-lg border-b border-surface-container-low pb-md">
+                            <h3 class="font-headline-md text-headline-md text-on-surface dark:text-[#f8f9fa]">Profile</h3>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0] mt-1">Update your personal information and password.</p>
+                        </div>
+                        <form class="space-y-lg">
+                            <!-- Username Field -->
+                            <div class="space-y-sm">
+                                <label class="block font-label-md text-label-md text-on-surface dark:text-[#f8f9fa]" for="settings-username">Username</label>
+                                <input class="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-4 py-3 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 transition-shadow outline-none placeholder:text-outline  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200" id="settings-username" name="username" type="text" value="pslw_user_01"/>
+                            </div>
+                            <!-- Divider -->
+                            <div class="h-px w-full bg-surface-container-low my-xl"></div>
+                            <!-- Password Fields -->
+                            <div class="space-y-md">
+                                <h4 class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa]">Change Password</h4>
+                                <div class="space-y-sm">
+                                    <label class="block font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]" for="current_password">Current Password</label>
+                                    <input class="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-4 py-2 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 transition-shadow outline-none  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200" id="current_password" name="current_password" type="password"/>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                                    <div class="space-y-sm">
+                                        <label class="block font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]" for="new_password">New Password</label>
+                                        <input class="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-4 py-2 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 transition-shadow outline-none  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200" id="new_password" name="new_password" type="password"/>
+                                    </div>
+                                    <div class="space-y-sm">
+                                        <label class="block font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]" for="confirm_password">Confirm New Password</label>
+                                        <input class="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-4 py-2 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 transition-shadow outline-none  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200" id="confirm_password" name="confirm_password" type="password"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Action -->
+                            <div class="pt-md flex justify-end">
+                                <button id="btn-save-profile" class="bg-primary text-on-primary font-label-md text-label-md py-2 px-6 rounded-md hover:bg-primary/90 transition-colors shadow-sm active:scale-[0.98]" type="button">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                    <!-- Preferences Card -->
+                    <section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                        <div class="mb-lg border-b border-surface-container-low pb-md flex justify-between items-center">
+                            <div>
+                                <h3 class="font-headline-md text-headline-md text-on-surface dark:text-[#f8f9fa]">Preferences</h3>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0] mt-1">Customize your workspace experience.</p>
+                            </div>
+                            <span class="material-symbols-outlined text-outline-variant text-3xl">tune</span>
+                        </div>
+                        <div class="flex items-center justify-between py-sm">
+                            <div>
+                                <span class="block font-body-md text-body-md text-on-surface dark:text-[#f8f9fa] font-medium">Dark Mode</span>
+                                <span class="block font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Switch between light and dark themes.</span>
+                            </div>
+                            <!-- Toggle Switch UI -->
+                            <label for="toggle-dark-mode" class="flex items-center cursor-pointer relative">
+                                <input type="checkbox" id="toggle-dark-mode" class="sr-only peer  dark:bg-[#1e1e1e] dark:border-gray-800 dark:text-gray-200">
+                                <div class="w-12 h-6 bg-surface-container-high rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                    </section>
+                    <!-- Danger Zone Card -->
+                    <section class="border border-error/30 bg-error-container/10 rounded-xl p-lg mt-xxl relative overflow-hidden">
+                        <!-- Decorative subtle gradient -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-error-container/20 to-transparent pointer-events-none"></div>
+                        <div class="relative z-10">
+                            <div class="mb-md flex items-center gap-sm">
+                                <span class="material-symbols-outlined text-error">warning</span>
+                                <h3 class="font-headline-md text-headline-md text-error">Danger Zone</h3>
+                            </div>
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-lg">
+                                <p class="font-body-md text-body-md text-on-surface dark:text-[#f8f9fa] max-w-[500px]">
+                                    Once you delete your account, there is no going back. All of your transcripts, generated summaries, and API usage history will be permanently erased. Please be certain.
+                                </p>
+                                <button id="btn-delete-account" class="whitespace-nowrap bg-error text-on-error hover:bg-error/90 font-label-md text-label-md py-2 px-6 rounded-md transition-colors shadow-sm active:scale-[0.98] flex items-center justify-center gap-2 border border-transparent" type="button">
+                                    <span class="material-symbols-outlined text-[20px]">delete_forever</span>
+                                    Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </div>
 </main>
 <!-- API Integration Script -->
 <script>
@@ -336,32 +806,62 @@
         return d.innerHTML;
     }
 
+    function switchView(viewId) {
+        const sections = ['view-dashboard', 'view-api-settings', 'view-history', 'view-usage', 'view-settings'];
+        sections.forEach((id) => {
+            const section = document.getElementById(id);
+            if (!section) return;
+            section.className = id === viewId ? 'block' : 'hidden';
+        });
+
+        const navLinks = document.querySelectorAll('nav a[onclick^="switchView"]');
+        navLinks.forEach(link => {
+            if (link.getAttribute('onclick').includes(viewId)) {
+                link.className = "flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-highest border-l-4 border-primary font-label-md text-label-md cursor-pointer active:scale-[0.98] transition-transform";
+                const icon = link.querySelector('.material-symbols-outlined');
+                if(icon) icon.style.fontVariationSettings = "'FILL' 1";
+            } else {
+                link.className = "flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-[#a0a0a0] font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98] rounded-lg";
+                const icon = link.querySelector('.material-symbols-outlined');
+                if(icon) icon.style.fontVariationSettings = "'FILL' 0";
+            }
+        });
+
+        if (viewId === 'view-history' || viewId === 'view-dashboard') loadSummaries();
+        if (viewId === 'view-usage') loadUsage();
+        if (viewId === 'view-api-settings') prefillApiSettings();
+    }
+
+    // --- Dashboard & History ---
+    let allHistoryItems = [];
+    let currentHistoryPage = 1;
+    const ITEMS_PER_PAGE = 5;
+
     async function loadSummaries() {
         try {
             const res = await fetch(`${BASE_URL}/api/summaries/${user.username}`);
             if (!res.ok) throw new Error();
-            const items = await res.json();
-            renderCards(items);
+            allHistoryItems = await res.json();
+            renderCards(allHistoryItems);
+            renderHistoryTable();
         } catch { console.error('Failed to load summaries'); }
     }
 
     function renderCards(items) {
         const grid = document.getElementById('summaries-grid');
         if (!grid) return;
-        // 기존 카드 모두 제거
         grid.innerHTML = '';
         if (items.length === 0) {
             grid.innerHTML = `
-                <div class="col-span-full text-center text-on-surface-variant py-xl">
+                <div class="col-span-full text-center text-on-surface-variant dark:text-[#a0a0a0] py-xl">
                     <span class="material-symbols-outlined text-[48px] mb-md block text-outline">inbox</span>
                     <p class="font-body-md text-body-md">No summaries yet. Upload an audio file to get started.</p>
                 </div>`;
             return;
         }
-        items.forEach(item => {
+        items.slice(0, 6).forEach(item => {
             const card = document.createElement('div');
-            card.className = 'bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300';
-            card.id = `card-${item.id}`;
+            card.className = 'bg-surface-container-lowest dark:bg-[#1e1e1e] border border-outline-variant dark:border-[#333333] rounded-xl p-lg flex flex-col justify-between hover:shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] transition-shadow duration-300';
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-start mb-md">
@@ -370,24 +870,119 @@
                                 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mic</span>
                             </div>
                             <div class="overflow-hidden">
-                                <p class="font-label-md text-label-md text-on-surface truncate" title="${escHtml(item.filename)}">${escHtml(item.filename)}</p>
-                                <p class="font-body-sm text-body-sm text-on-surface-variant">#${item.id}</p>
+                                <p class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] truncate" title="${escHtml(item.filename)}">${escHtml(item.filename)}</p>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">#${item.id}</p>
                             </div>
                         </div>
-                        <span class="ml-sm shrink-0 px-3 py-1 rounded-full bg-surface-container border border-outline-variant font-label-md text-label-md text-on-surface text-[12px]">Completed</span>
+                        <span class="ml-sm shrink-0 px-3 py-1 rounded-full bg-surface-container dark:bg-[#2a2a2a] border border-outline-variant dark:border-[#444444] font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] text-[12px]">Completed</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-sm pt-md border-t border-surface-container-high">
+                <div class="flex items-center gap-sm pt-md border-t border-surface-container-high mt-4">
                     <button onclick="viewSummary(${item.id})" class="flex-1 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-2 px-4 rounded-lg flex justify-center items-center gap-xs transition-colors">
-                        <span class="material-symbols-outlined text-[18px]">visibility</span>
-                        View Details
+                        <span class="material-symbols-outlined text-[18px]">visibility</span> View Details
                     </button>
-                    <button onclick="deleteSummary(${item.id})" class="w-10 h-10 flex items-center justify-center text-outline hover:text-error hover:bg-error-container rounded-lg transition-colors" title="Delete">
+                    <button onclick="deleteSummary(${item.id})" class="w-10 h-10 flex items-center justify-center text-outline hover:text-error hover:bg-error-container rounded-lg transition-colors">
                         <span class="material-symbols-outlined text-[20px]">delete</span>
                     </button>
                 </div>`;
             grid.appendChild(card);
         });
+    }
+
+    function renderHistoryTable() {
+        const tbody = document.getElementById('history-tbody');
+        if (!tbody) return;
+        
+        // Filters
+        const searchVal = document.getElementById('history-search')?.value.toLowerCase() || '';
+        
+        let filtered = allHistoryItems.filter(item => {
+            if (searchVal && !item.filename.toLowerCase().includes(searchVal) && !item.id.toString().includes(searchVal)) return false;
+            return true;
+        });
+        
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+        if (currentHistoryPage > totalPages) currentHistoryPage = totalPages;
+        if (currentHistoryPage < 1) currentHistoryPage = 1;
+        
+        const startIdx = (currentHistoryPage - 1) * ITEMS_PER_PAGE;
+        const paginated = filtered.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+        
+        tbody.innerHTML = '';
+        if (paginated.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-on-surface-variant dark:text-[#cccccc]">No history available.</td></tr>`;
+        } else {
+            paginated.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-surface-bright dark:hover:bg-[#252525] border-b border-surface-container dark:border-gray-800 transition-colors group';
+                tr.innerHTML = `
+                    <td class="py-4 px-4 font-mono-sm text-mono-sm text-outline dark:text-[#cccccc]">#${item.id}</td>
+                    <td class="py-4 px-4 dark:text-[#cccccc]">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded bg-primary-container/20 flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">description</span>
+                            </div>
+                            <div>
+                                <p class="font-body-md text-body-md font-medium text-on-surface dark:text-[#f8f9fa] group-hover:text-primary transition-colors">${escHtml(item.filename)}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4 font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Recent</td>
+                    <td class="py-4 px-4 dark:text-[#cccccc]">
+                        <span class="inline-flex items-center px-2 py-1 rounded-md bg-surface-container text-on-surface dark:text-[#f8f9fa] font-label-md text-[12px]">-</span>
+                    </td>
+                    <td class="py-4 px-4 dark:text-[#cccccc]">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container/30 text-secondary border border-secondary/20 font-label-md text-[12px]">
+                            <span class="material-symbols-outlined" style="font-size: 14px;">subject</span>
+                            Summary
+                        </span>
+                    </td>
+                    <td class="py-4 px-4 text-right dark:text-[#cccccc]">
+                        <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="viewSummary(${item.id})" class="p-1.5 text-on-surface-variant dark:text-[#a0a0a0] hover:text-primary hover:bg-surface-container rounded transition-colors" title="View Details">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                            </button>
+                            <button onclick="deleteSummary(${item.id})" class="p-1.5 text-on-surface-variant dark:text-[#a0a0a0] hover:text-error hover:bg-error-container/20 rounded transition-colors" title="Delete">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // Render pagination controls
+        const paginationDiv = document.getElementById('history-pagination');
+        if (paginationDiv) {
+            let buttonsHtml = '';
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentHistoryPage) {
+                    buttonsHtml += `<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-label-md text-label-md">${i}</button>`;
+                } else {
+                    buttonsHtml += `<button onclick="changePage(${i})" class="w-8 h-8 flex items-center justify-center rounded text-on-surface-variant dark:text-[#a0a0a0] hover:bg-surface-container font-label-md text-label-md transition-colors">${i}</button>`;
+                }
+            }
+            
+            paginationDiv.innerHTML = `
+                <p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Showing <span class="font-medium text-on-surface dark:text-[#f8f9fa]">${totalItems === 0 ? 0 : startIdx + 1}</span> to <span class="font-medium text-on-surface dark:text-[#f8f9fa]">${Math.min(startIdx + ITEMS_PER_PAGE, totalItems)}</span> of <span class="font-medium text-on-surface dark:text-[#f8f9fa]">${totalItems}</span> results</p>
+                <div class="flex items-center gap-1">
+                    <button onclick="changePage(${currentHistoryPage - 1})" class="p-2 text-outline hover:text-on-surface dark:text-[#f8f9fa] hover:bg-surface-container rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed" ${currentHistoryPage <= 1 ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined" style="font-size: 20px;">chevron_left</span>
+                    </button>
+                    ${buttonsHtml}
+                    <button onclick="changePage(${currentHistoryPage + 1})" class="p-2 text-on-surface-variant dark:text-[#a0a0a0] hover:text-on-surface dark:text-[#f8f9fa] hover:bg-surface-container rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed" ${currentHistoryPage >= totalPages ? 'disabled' : ''}>
+                        <span class="material-symbols-outlined" style="font-size: 20px;">chevron_right</span>
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    function changePage(p) {
+        currentHistoryPage = p;
+        renderHistoryTable();
     }
 
     function viewSummary(id) { window.location.href = `summary.html?id=${id}`; }
@@ -397,14 +992,17 @@
         try {
             const res = await fetch(`${BASE_URL}/api/summary/${id}`, { method: 'DELETE' });
             if (res.ok) { await loadSummaries(); }
-            else { alert('삭제 실패. 다시 시도해주세요.'); }
-        } catch { alert('서버 연결 오류.'); }
+            else { alert('삭제 실패'); }
+        } catch { alert('서버 연결 오류'); }
     }
 
+    // --- File Upload ---
     async function uploadFile(file) {
         const defaultState = document.getElementById('upload-default-state');
         const loadingState = document.getElementById('upload-loading-state');
         const dropZone = document.getElementById('drop-zone');
+        if(!defaultState || !loadingState) return;
+
         defaultState.classList.add('hidden');
         loadingState.classList.remove('hidden');
         loadingState.classList.add('flex');
@@ -414,10 +1012,9 @@
             formData.append('file', file);
             formData.append('username', user.username);
             const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: formData });
-            const data = await res.json();
-            if (!res.ok) { alert(`업로드 실패: ${data.detail}`); }
+            if (!res.ok) { const data = await res.json(); alert(`업로드 실패: ${data.detail}`); }
             else { await loadSummaries(); }
-        } catch { alert('서버 연결 오류. 백엔드가 실행 중인지 확인하세요.'); }
+        } catch { alert('서버 연결 오류.'); }
         finally {
             loadingState.classList.add('hidden');
             loadingState.classList.remove('flex');
@@ -427,36 +1024,303 @@
         }
     }
 
+    // --- API Settings ---
+    function prefillApiSettings() {
+        const providerSelect = document.getElementById('api-provider');
+        if (providerSelect && user.provider) {
+            providerSelect.value = user.provider;
+        }
+    }
+
+    async function saveApiSettings() {
+        const provider = document.getElementById('api-provider').value;
+        const apiKey = document.getElementById('apiKey').value;
+        const statusBadge = document.getElementById('api-status-badge');
+        
+        if (!apiKey.trim()) { alert('API Key를 입력해주세요.'); return; }
+        
+        try {
+            const res = await fetch(`${BASE_URL}/api/user/api-keys`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user.username, provider: provider, api_key: apiKey })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail);
+            
+            user.provider = provider;
+            user.api_key = apiKey;
+            localStorage.setItem('pslw_user', JSON.stringify(user));
+            if(statusBadge) {
+                statusBadge.innerHTML = `<span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span> Status: Connected (${provider})`;
+                statusBadge.className = 'flex items-center gap-2 text-primary font-label-md text-label-md bg-primary-container/20 px-3 py-1.5 rounded-full border border-primary/20';
+            }
+            alert('API 키가 성공적으로 저장되었습니다.');
+        } catch (e) {
+            alert(`API 키 저장 실패: ${e.message}`);
+        }
+    }
+
+    async function testApiConnection() {
+        await saveApiSettings(); // 저장 테스트로 갈음
+    }
+
+    // --- Usage ---
+    async function loadUsage() {
+        try {
+            const res = await fetch(`${BASE_URL}/api/usage/${user.username}`);
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            
+            const countEl = document.getElementById('usage-total-count');
+            if (countEl) countEl.textContent = data.total_processed;
+            
+            const monthlyEl = document.getElementById('usage-monthly-count');
+            if (monthlyEl) monthlyEl.textContent = data.monthly_requests;
+            
+            const percentEl = document.getElementById('usage-quota-percent');
+            if (percentEl) percentEl.textContent = data.quota_percent + '%';
+            
+            const labelEl = document.getElementById('usage-quota-label');
+            if (labelEl) labelEl.textContent = data.quota_label;
+            
+            const barEl = document.getElementById('usage-quota-bar');
+            if (barEl) barEl.style.width = data.quota_percent + '%';
+
+            // Dynamic classes for quota status
+            const quotaCard = document.getElementById('usage-quota-card');
+            const quotaText = document.getElementById('usage-quota-text');
+            const quotaIcon = document.getElementById('usage-quota-icon');
+            const quotaBg = document.getElementById('usage-quota-bg');
+            if (quotaCard && quotaText && quotaIcon && quotaBg && percentEl && labelEl && barEl) {
+                if (data.quota_percent >= 80) {
+                    quotaCard.className = 'col-span-4 bg-error-container/20 border border-error rounded-xl p-6 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden';
+                    quotaText.className = 'font-label-md text-label-md text-error font-semibold';
+                    quotaIcon.className = 'material-symbols-outlined text-error';
+                    percentEl.className = 'font-display-lg text-display-lg text-error';
+                    labelEl.className = 'font-label-md text-label-md text-error';
+                    quotaBg.className = 'w-full bg-error-container rounded-full h-1.5';
+                    barEl.className = 'bg-error h-1.5 rounded-full';
+                    quotaIcon.textContent = 'warning';
+                } else {
+                    quotaCard.className = 'col-span-4 bg-primary-container/20 border border-primary rounded-xl p-6 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden';
+                    quotaText.className = 'font-label-md text-label-md text-primary font-semibold';
+                    quotaIcon.className = 'material-symbols-outlined text-primary';
+                    percentEl.className = 'font-display-lg text-display-lg text-primary';
+                    labelEl.className = 'font-label-md text-label-md text-primary';
+                    quotaBg.className = 'w-full bg-primary-container rounded-full h-1.5';
+                    barEl.className = 'bg-primary h-1.5 rounded-full';
+                    quotaIcon.textContent = 'check_circle';
+                }
+            }
+
+            // Dynamic Chart
+            const chartContainer = document.getElementById('usage-chart-container');
+            if (chartContainer && data.daily_usage) {
+                const maxVal = Math.max(...data.daily_usage, 1);
+                chartContainer.innerHTML = `
+                    <div class="absolute left-0 top-0 h-full flex flex-col justify-between text-outline font-mono-sm text-mono-sm pb-2 opacity-50 -ml-8">
+                        <span>${maxVal}</span>
+                        <span>${Math.round(maxVal/2)}</span>
+                        <span>0</span>
+                    </div>
+                `;
+                data.daily_usage.forEach(val => {
+                    const heightPercent = (val / maxVal) * 100;
+                    chartContainer.innerHTML += `
+                        <div class="w-full bg-primary-container hover:bg-primary transition-colors rounded-t-sm relative group" style="height: ${heightPercent}%">
+                            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface font-mono-sm text-mono-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-20">${val}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Model Distribution
+            const modelDist = document.getElementById('usage-model-distribution');
+            if (modelDist && data.model_distribution) {
+                modelDist.innerHTML = '';
+                const colors = ['bg-primary', 'bg-secondary', 'bg-error'];
+                data.model_distribution.forEach((model, i) => {
+                    const color = colors[i % colors.length];
+                    modelDist.innerHTML += `
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full ${color}"></div> ${escHtml(model.name)}
+                                </span>
+                                <span class="font-mono-sm text-mono-sm text-on-surface-variant dark:text-[#a0a0a0]">${model.percent}%</span>
+                            </div>
+                            <div class="w-full bg-surface-container-high rounded-full h-2">
+                                <div class="${color} h-2 rounded-full" style="width: ${model.percent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        } catch (e) {
+            // Fallback mock data
+            const countEl = document.getElementById('usage-total-count');
+            if (countEl) countEl.textContent = '0';
+            
+            const monthlyEl = document.getElementById('usage-monthly-count');
+            if (monthlyEl) monthlyEl.textContent = '0';
+            
+            const percentEl = document.getElementById('usage-quota-percent');
+            if (percentEl) percentEl.textContent = '0%';
+            
+            const labelEl = document.getElementById('usage-quota-label');
+            if (labelEl) labelEl.textContent = 'Data unavailable';
+            
+            const barEl = document.getElementById('usage-quota-bar');
+            if (barEl) barEl.style.width = '0%';
+        }
+    }
+
+    // --- Profile & Settings ---
+    async function saveProfile() {
+        const currentPw = document.getElementById('current_password').value;
+        const newPw = document.getElementById('new_password').value;
+        const confirmPw = document.getElementById('confirm_password').value;
+        
+        if (!currentPw || !newPw || !confirmPw) { alert('모든 비밀번호 필드를 입력해주세요.'); return; }
+        if (newPw !== confirmPw) { alert('새 비밀번호와 확인 비밀번호가 일치하지 않습니다.'); return; }
+        
+        try {
+            const res = await fetch(`${BASE_URL}/api/user/profile`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user.username, current_password: currentPw, new_password: newPw })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail);
+            
+            alert('비밀번호가 성공적으로 변경되었습니다.');
+            document.getElementById('current_password').value = '';
+            document.getElementById('new_password').value = '';
+            document.getElementById('confirm_password').value = '';
+        } catch (e) {
+            alert(`비밀번호 변경 실패: ${e.message}`);
+        }
+    }
+
+    async function deleteAccount() {
+        if (!confirm("정말 계정을 삭제하시겠습니까? (이 작업은 되돌릴 수 없습니다)")) return;
+        
+        try {
+            const res = await fetch(`${BASE_URL}/api/user/${user.username}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error();
+            
+            localStorage.clear();
+            window.location.href = 'login.html';
+        } catch (e) {
+            alert('계정 삭제에 실패했습니다.');
+        }
+    }
+
+    function toggleDarkMode() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
     function logout() {
         localStorage.removeItem('pslw_user');
         window.location.href = 'login.html';
     }
 
+    // --- Initialize ---
     document.addEventListener('DOMContentLoaded', () => {
+        // Init theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            const toggle = document.getElementById('toggle-dark-mode');
+            if (toggle) toggle.checked = true;
+        }
+
+        loadSummaries();
+
+        // Search & Filters
+        const searchInput = document.getElementById('history-search');
+        if (searchInput) searchInput.addEventListener('input', () => { currentHistoryPage = 1; renderHistoryTable(); });
+        
+        ['history-filter-date', 'history-filter-provider', 'history-filter-type'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', () => { currentHistoryPage = 1; renderHistoryTable(); });
+        });
+
+        // Drag & Drop
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
         const defaultState = document.getElementById('upload-default-state');
 
-        loadSummaries();
+        if(dropZone && fileInput && defaultState) {
+            dropZone.addEventListener('click', () => {
+                if (!defaultState.classList.contains('hidden')) fileInput.click();
+            });
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-primary');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-primary');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-primary');
+                if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]);
+            });
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) uploadFile(fileInput.files[0]);
+            });
+        }
+        
+        // Sidebar Upload Audio
+        const btnUploadAudio = document.getElementById('btn-upload-audio');
+        if (btnUploadAudio) {
+            btnUploadAudio.addEventListener('click', () => {
+                switchView('view-dashboard');
+                setTimeout(() => {
+                    if (fileInput) fileInput.click();
+                }, 100);
+            });
+        }
 
-        dropZone.addEventListener('click', () => {
-            if (!defaultState.classList.contains('hidden')) fileInput.click();
-        });
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('border-primary');
-        });
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-primary');
-        });
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-primary');
-            if (e.dataTransfer.files.length > 0) uploadFile(e.dataTransfer.files[0]);
-        });
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) uploadFile(fileInput.files[0]);
-        });
+        // API Settings
+        const saveApiBtn = document.getElementById('btn-save-api');
+        if (saveApiBtn) saveApiBtn.addEventListener('click', saveApiSettings);
+        const testBtn = document.getElementById('btn-test-connection');
+        if (testBtn) testBtn.addEventListener('click', testApiConnection);
+
+        // Profile settings
+        const saveProfileBtn = document.getElementById('btn-save-profile');
+        if (saveProfileBtn) saveProfileBtn.addEventListener('click', saveProfile);
+
+        // Dark mode
+        const darkModeToggle = document.getElementById('toggle-dark-mode');
+        if (darkModeToggle) darkModeToggle.addEventListener('change', toggleDarkMode);
+
+        // Delete Account
+        const deleteAccountBtn = document.getElementById('btn-delete-account');
+        if (deleteAccountBtn) deleteAccountBtn.addEventListener('click', deleteAccount);
+        
+        // Password Toggle
+        const toggleBtn = document.getElementById('togglePassword');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                const input = document.getElementById('apiKey');
+                const icon = document.getElementById('toggleIcon');
+                if (input && icon) {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.textContent = 'visibility_off';
+                    } else {
+                        input.type = 'password';
+                        icon.textContent = 'visibility';
+                    }
+                }
+            });
+        }
     });
 </script>
 </body></html>
+
+

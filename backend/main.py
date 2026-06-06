@@ -58,7 +58,9 @@ def init_db() -> None:
                 username      TEXT PRIMARY KEY,
                 password_hash TEXT NOT NULL,
                 provider      TEXT NOT NULL,
-                api_key       TEXT NOT NULL
+                api_key       TEXT NOT NULL,
+                total_processed_files INTEGER DEFAULT 0,
+                total_api_requests INTEGER DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS summaries (
@@ -70,6 +72,15 @@ def init_db() -> None:
             );
             """
         )
+        conn.commit()
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN total_processed_files INTEGER DEFAULT 0;")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN total_api_requests INTEGER DEFAULT 0;")
+        except sqlite3.OperationalError:
+            pass
         conn.commit()
     except sqlite3.Error as e:
         raise RuntimeError(f"DB 초기화 실패: {e}") from e
@@ -141,6 +152,18 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+
+class UpdateApiKeysRequest(BaseModel):
+    username: str
+    provider: str   # "openai" | "gemini"
+    api_key: str
+
+
+class UpdateProfileRequest(BaseModel):
+    username: str
+    current_password: str
+    new_password: str
 
 
 # ─────────────────────────────────────────────
@@ -256,6 +279,92 @@ def login(req: LoginRequest):
         conn.close()
 
 
+@app.put("/api/user/api-keys")
+def update_user_settings(req: UpdateApiKeysRequest):
+    """사용자의 provider와 api_key를 업데이트합니다."""
+    if req.provider not in ("openai", "gemini"):
+        raise HTTPException(
+            status_code=400, detail="provider는 'openai' 또는 'gemini'만 허용됩니다."
+        )
+
+    conn = get_conn()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT username FROM users WHERE username = ?", (req.username,)
+        )
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="등록되지 않은 사용자입니다.")
+
+        cursor.execute(
+            "UPDATE users SET provider = ?, api_key = ? WHERE username = ?",
+            (req.provider, req.api_key, req.username),
+        )
+        conn.commit()
+        return {"message": "Settings updated successfully", "provider": req.provider}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"설정 업데이트 실패: {e}")
+    finally:
+        conn.close()
+
+
+@app.put("/api/user/profile")
+def update_user_profile(req: UpdateProfileRequest):
+    """사용자의 비밀번호를 업데이트합니다."""
+    conn = get_conn()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT password_hash FROM users WHERE username = ?", (req.username,))
+        row = cursor.fetchone()
+        
+        if not row:
+            raise HTTPException(status_code=404, detail="등록되지 않은 사용자입니다.")
+            
+        if row["password_hash"] != hash_password(req.current_password):
+            raise HTTPException(status_code=401, detail="현재 비밀번호가 일치하지 않습니다.")
+            
+        new_pw_hash = hash_password(req.new_password)
+        cursor.execute(
+            "UPDATE users SET password_hash = ? WHERE username = ?",
+            (new_pw_hash, req.username)
+        )
+        conn.commit()
+        return {"message": "비밀번호가 성공적으로 변경되었습니다."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"프로필 업데이트 실패: {e}")
+    finally:
+        conn.close()
+
+
+@app.delete("/api/user/{username}")
+def delete_user_account(username: str):
+    """사용자 계정과 관련 데이터(summaries)를 영구 삭제합니다."""
+    conn = get_conn()
+    try:
+        cursor = conn.cursor()
+        # 먼저 사용자가 존재하는지 확인
+        cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="등록되지 않은 사용자입니다.")
+            
+        # 외래 키 또는 연관된 데이터(summaries) 삭제
+        cursor.execute("DELETE FROM summaries WHERE username = ?", (username,))
+        # 사용자 레코드 삭제
+        cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+        conn.commit()
+        return {"message": "계정이 영구적으로 삭제되었습니다."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"계정 삭제 실패: {e}")
+    finally:
+        conn.close()
+
+
 # ─────────────────────────────────────────────
 # 2. Core Processing API
 # ─────────────────────────────────────────────
@@ -336,6 +445,10 @@ async def upload_audio(
             "INSERT INTO summaries (username, filename, transcript, summary) VALUES (?, ?, ?, ?)",
             (username, file.filename or "unknown", transcript, summary),
         )
+        cursor.execute(
+            "UPDATE users SET total_processed_files = total_processed_files + 1, total_api_requests = total_api_requests + 1 WHERE username = ?",
+            (username,)
+        )
         conn.commit()
         new_id = cursor.lastrowid
         return {"id": new_id, "filename": file.filename, "message": "Success"}
@@ -406,6 +519,74 @@ def delete_summary(id: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"삭제 처리 실패: {e}")
+    finally:
+        conn.close()
+
+
+# ─────────────────────────────────────────────
+# 4. Usage & Analytics API
+# ─────────────────────────────────────────────
+@app.get("/api/usage/{username}")
+def get_usage(username: str):
+    """사용자의 사용량 통계를 반환합니다."""
+    conn = get_conn()
+    try:
+        cursor = conn.cursor()
+
+        # 사용자 존재 여부 및 provider 확인
+        cursor.execute("SELECT provider, total_processed_files, total_api_requests FROM users WHERE username = ?", (username,))
+        user_row = cursor.fetchone()
+        if not user_row:
+            raise HTTPException(status_code=404, detail="등록되지 않은 사용자입니다.")
+
+        current_provider = user_row["provider"]
+        total_count = user_row["total_processed_files"]
+        monthly_count = user_row["total_api_requests"]
+
+        # 할당량 계산 (100건 기준)
+        quota_limit = 100
+        quota_percent = min(round((total_count / quota_limit) * 100), 100) if quota_limit > 0 else 0
+
+        if quota_percent >= 80:
+            quota_label = "Limit Approaching"
+        elif quota_percent >= 50:
+            quota_label = "Moderate Usage"
+        else:
+            quota_label = "Healthy"
+
+        # provider별 분포 (현재 사용자의 provider 기준으로 표시)
+        provider_display = {
+            "openai": "OpenAI GPT-4o-mini",
+            "gemini": "Google Gemini",
+        }
+        model_distribution = [
+            {
+                "name": provider_display.get(current_provider, current_provider),
+                "percent": 100 if total_count > 0 else 0,
+            }
+        ]
+
+        # 모의 일별 사용량 (총 월별 사용량을 임의로 분배)
+        daily_usage = [
+            int(monthly_count * 0.1), int(monthly_count * 0.2), 
+            int(monthly_count * 0.15), int(monthly_count * 0.25), 
+            int(monthly_count * 0.1), int(monthly_count * 0.15), 
+            int(monthly_count * 0.05)
+        ]
+
+        return {
+            "total_processed": total_count,
+            "monthly_requests": monthly_count,
+            "quota_percent": quota_percent,
+            "quota_limit": quota_limit,
+            "quota_label": quota_label,
+            "model_distribution": model_distribution,
+            "daily_usage": daily_usage,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"사용량 조회 실패: {e}")
     finally:
         conn.close()
 

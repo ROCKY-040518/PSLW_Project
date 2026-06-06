@@ -1,16 +1,24 @@
 <!DOCTYPE html>
-
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Summary Detail - PSLW</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Summary Detail - PSLW</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; }
+        
+        /* 마크다운 렌더링된 텍스트를 예쁘게 꾸며주는 CSS */
+        #summary-content p { margin-bottom: 1rem; line-height: 1.6; }
+        #summary-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+        #summary-content strong { font-weight: 600; color: #3525cd; }
+        .dark #summary-content strong { color: #c3c0ff; }
+        #summary-content h1, #summary-content h2, #summary-content h3 { font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+    </style>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -84,15 +92,15 @@
                         "sm": "8px"
                     },
                     "fontFamily": {
-                        "body-sm": ["Inter"],
-                        "body-md": ["Inter"],
-                        "display-lg": ["Inter"],
-                        "headline-lg": ["Inter"],
-                        "mono-sm": ["JetBrains Mono"],
-                        "headline-md": ["Inter"],
-                        "body-lg": ["Inter"],
-                        "label-md": ["Inter"],
-                        "headline-lg-mobile": ["Inter"]
+                        "body-sm": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "display-lg": ["Inter", "sans-serif"],
+                        "headline-lg": ["Inter", "sans-serif"],
+                        "mono-sm": ["JetBrains Mono", "monospace"],
+                        "headline-md": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "label-md": ["Inter", "sans-serif"],
+                        "headline-lg-mobile": ["Inter", "sans-serif"]
                     },
                     "fontSize": {
                         "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
@@ -109,270 +117,172 @@
             }
         }
     </script>
+<script>
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    }
+</script>
+    
 </head>
-<body class="bg-surface text-on-surface font-body-md min-h-screen flex">
-<!-- SideNavBar (Suppressed on transactional/sub-pages per instructions, but requested in prompt. Assuming this is a sub-page view within the main app ecosystem, but standard "Back to Dashboard" implies it's a focus view. However, prompt explicitly requests "Sidebar (SideNavBar component)". We will include it.) -->
-<nav class="hidden md:flex flex-col h-full py-lg bg-surface-container-low dark:bg-surface-dim text-primary dark:text-primary-fixed font-body-md text-body-md fixed left-0 top-0 w-[280px] border-r border-outline-variant dark:border-outline z-50">
-<div class="px-lg mb-xl">
-<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">PSLW</h1>
-<p class="font-label-md text-label-md text-on-surface-variant opacity-80 mt-xs">Invisible Intelligence</p>
+<body class="bg-surface dark:bg-[#121212] text-on-surface dark:text-gray-200 font-body-md min-h-screen flex antialiased transition-colors duration-300">
+
+    <nav class="hidden md:flex flex-col h-full py-lg bg-surface-container-low dark:bg-[#1e1e1e] fixed left-0 top-0 w-[280px] border-r border-outline-variant dark:border-[#333333] z-50">
+<!-- Header -->
+<div class="px-lg mb-xl flex items-center gap-sm cursor-pointer">
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">PSLW</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Invisible Intelligence</p>
 </div>
-<div class="px-md mb-lg">
-<button class="w-full bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-label-md text-label-md py-3 rounded-lg transition-colors flex items-center justify-center gap-sm">
-<span class="material-symbols-outlined">upload</span>
+</div>
+<!-- CTA -->
+<div class="px-lg mb-xl">
+<button id="btn-upload-audio" class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-3 rounded-lg flex items-center justify-center gap-2 transition-transform cursor-pointer active:scale-[0.98] shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
                 Upload Audio
             </button>
 </div>
-<div class="flex-1 overflow-y-auto">
-<ul class="space-y-sm">
-<!-- Dashboard Active (Assuming we arrived from Dashboard) -->
-<li>
-<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-primary-fixed bg-surface-container-highest dark:bg-surface-container-high border-l-4 border-primary dark:border-primary-fixed cursor-pointer active:scale-[0.98] transition-transform" href="#">
-<span class="material-symbols-outlined">dashboard</span>
-                        Dashboard
-                    </a>
-</li>
-<li>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 cursor-pointer active:scale-[0.98] transition-transform" href="#">
-<span class="material-symbols-outlined">settings_input_component</span>
-                        API Settings
-                    </a>
-</li>
-<li>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 cursor-pointer active:scale-[0.98] transition-transform" href="#">
-<span class="material-symbols-outlined">history</span>
-                        History
-                    </a>
-</li>
-<li>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 cursor-pointer active:scale-[0.98] transition-transform" href="#">
-<span class="material-symbols-outlined">bar_chart</span>
-                        Usage
-                    </a>
-</li>
-</ul>
+<!-- Main Nav Tabs -->
+<div class="flex-1 overflow-y-auto flex flex-col gap-xs">
+<!-- Active Tab: Dashboard -->
+            <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-highest border-l-4 border-primary font-label-md text-label-md cursor-pointer active:scale-[0.98] transition-transform" href="home.html" >
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                Dashboard
+            </a>
+<!-- Inactive Tabs -->
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-[#a0a0a0] font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98]" href="home.html" onclick="switchView('view-api-settings'); return false;">
+                <span class="material-symbols-outlined">settings_input_component</span>
+                API Settings
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-[#a0a0a0] font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98]" href="home.html" >
+                <span class="material-symbols-outlined">history</span>
+                History
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-[#a0a0a0] font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98]" href="home.html" >
+                <span class="material-symbols-outlined">bar_chart</span>
+                Usage
+            </a>
 </div>
-<div class="mt-auto px-md">
-<ul class="space-y-sm">
-<li>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 cursor-pointer active:scale-[0.98] transition-transform" href="#">
-<span class="material-symbols-outlined">settings</span>
-                        Settings
-                    </a>
-</li>
-<li>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 cursor-pointer active:scale-[0.98] transition-transform" href="#">
-<span class="material-symbols-outlined">logout</span>
-                        Logout
-                    </a>
-</li>
-</ul>
+<!-- Footer Tabs -->
+<div class="mt-auto px-xs flex flex-col gap-xs pt-lg border-t border-outline-variant mx-lg">
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-[#a0a0a0] font-label-md text-label-md hover:bg-surface-container-high transition-colors duration-200 cursor-pointer active:scale-[0.98] rounded-lg" href="home.html" >
+                <span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-error font-label-md text-label-md hover:bg-error-container hover:text-on-error-container transition-colors duration-200 cursor-pointer active:scale-[0.98] rounded-lg" href="home.html" onclick="logout(); return false;">
+                <span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
 </div>
 </nav>
-<!-- Main Content Area -->
-<main class="flex-1 md:ml-[280px] min-h-screen flex flex-col max-w-[max-width] mx-auto w-full">
-<!-- Header / Back Navigation -->
-<header class="px-margin-mobile md:px-margin-desktop py-lg flex items-center justify-between border-b border-outline-variant bg-surface sticky top-0 z-40">
-<a class="flex items-center gap-sm text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="home.html">
-<span class="material-symbols-outlined">arrow_back</span>
+
+    <main class="flex-1 md:ml-[280px] min-h-screen flex flex-col max-w-[1440px] mx-auto w-full">
+        <header class="px-6 md:px-10 py-6 flex items-center justify-between border-b border-outline-variant dark:border-gray-800 bg-surface dark:bg-[#121212] sticky top-0 z-40 transition-colors duration-300">
+            <a href="home.html" class="flex items-center gap-2 text-on-surface-variant dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors text-sm font-medium">
+                <span class="material-symbols-outlined text-lg">arrow_back</span>
                 Back to Dashboard
             </a>
-<div class="flex items-center gap-md">
-<span class="font-mono-sm text-mono-sm text-outline bg-surface-container px-sm py-xs rounded" id="summary-id-badge">ID: —</span>
-<span class="inline-flex items-center rounded-full bg-surface-container-highest px-sm py-xs font-label-md text-label-md text-on-surface-variant">
-<span class="w-2 h-2 rounded-full bg-primary mr-sm"></span>
+            <div class="flex items-center gap-4">
+                <span id="summary-id-badge" class="font-mono-sm text-xs text-outline dark:text-gray-500 bg-surface-container dark:bg-gray-800 px-2 py-1 rounded">ID: —</span>
+                <span class="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-sm font-medium text-green-800 dark:text-green-400 border border-green-200 dark:border-green-800">
+                    <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
                     Completed
                 </span>
-</div>
-</header>
-<!-- Content Canvas -->
-<div class="flex-1 p-margin-mobile md:p-margin-desktop flex flex-col md:flex-row gap-lg md:gap-gutter overflow-hidden">
-<!-- Left Side: Original Script (STT Results) -->
-<div class="w-full md:w-1/2 flex flex-col bg-surface-container-lowest rounded-lg border border-outline-variant h-[calc(100vh-140px)]">
-<div class="p-md border-b border-outline-variant bg-surface-bright flex items-center justify-between rounded-t-lg">
-<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-sm">
-<span class="material-symbols-outlined text-outline">description</span>
+            </div>
+        </header>
+
+        <div class="flex-1 p-6 md:p-10 flex flex-col lg:flex-row gap-6 overflow-hidden">
+            
+            <div class="w-full lg:w-1/2 flex flex-col bg-surface-container-lowest dark:bg-[#1e1e1e] rounded-xl border border-outline-variant dark:border-gray-800 h-[calc(100vh-140px)] shadow-sm transition-colors duration-300">
+                <div class="p-5 border-b border-outline-variant dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between rounded-t-xl">
+                    <h2 class="text-lg font-semibold text-on-surface dark:text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-outline dark:text-gray-400">description</span>
                         Original Script (STT Results)
                     </h2>
-<button class="text-on-surface-variant hover:text-primary transition-colors">
-<span class="material-symbols-outlined">download</span>
-</button>
-</div>
-<div class="flex-1 overflow-y-auto p-md md:p-lg" id="transcript-container">
-<!-- Line items for transcript -->
-<div class="flex gap-md group">
-<div class="w-12 text-outline font-mono-sm text-mono-sm pt-1 shrink-0">00:01</div>
-<div class="flex-1 pb-md border-b border-surface-container group-hover:bg-surface-container-low px-sm -mx-sm rounded transition-colors">
-<strong class="text-on-surface block mb-xs">Speaker 1:</strong>
-                            Alright, let's get started. Thank you all for joining the Q3 revenue review.
-                        </div>
-</div>
-<div class="flex gap-md group">
-<div class="w-12 text-outline font-mono-sm text-mono-sm pt-1 shrink-0">00:15</div>
-<div class="flex-1 pb-md border-b border-surface-container group-hover:bg-surface-container-low px-sm -mx-sm rounded transition-colors">
-<strong class="text-on-surface block mb-xs">Speaker 1:</strong>
-                            As you can see from the pre-read materials, we've had an exceptionally strong quarter, particularly in the enterprise segment where we saw a 42% YoY growth.
-                        </div>
-</div>
-<div class="flex gap-md group">
-<div class="w-12 text-outline font-mono-sm text-mono-sm pt-1 shrink-0">00:42</div>
-<div class="flex-1 pb-md border-b border-surface-container group-hover:bg-surface-container-low px-sm -mx-sm rounded transition-colors">
-<strong class="text-on-surface block mb-xs">Speaker 2:</strong>
-                            That's great news, Sarah. What were the primary drivers for that enterprise growth? Did the new pricing model roll out have the expected impact?
-                        </div>
-</div>
-<div class="flex gap-md group">
-<div class="w-12 text-outline font-mono-sm text-mono-sm pt-1 shrink-0">01:05</div>
-<div class="flex-1 pb-md border-b border-surface-container group-hover:bg-surface-container-low px-sm -mx-sm rounded transition-colors">
-<strong class="text-on-surface block mb-xs">Speaker 1:</strong>
-                            Yes, exactly. The tier 3 restructuring aligned perfectly with larger procurement cycles. We also saw higher retention rates across the board, dropping churn down to 1.2%.
-                        </div>
-</div>
-<div class="flex gap-md group">
-<div class="w-12 text-outline font-mono-sm text-mono-sm pt-1 shrink-0">01:40</div>
-<div class="flex-1 pb-md border-b border-surface-container group-hover:bg-surface-container-low px-sm -mx-sm rounded transition-colors">
-<strong class="text-on-surface block mb-xs">Speaker 3:</strong>
-                            Are there any anticipated headwinds for Q4? Given the current macroeconomic climate, I'm concerned about pipeline velocity.
-                        </div>
-</div>
-<div class="flex gap-md group">
-<div class="w-12 text-outline font-mono-sm text-mono-sm pt-1 shrink-0">02:10</div>
-<div class="flex-1 pb-md border-b border-surface-container group-hover:bg-surface-container-low px-sm -mx-sm rounded transition-colors">
-<strong class="text-on-surface block mb-xs">Speaker 1:</strong>
-                            It's a valid concern. We are modeling a slightly longer sales cycle for net-new logos in Q4. However, our expansion pipeline within existing accounts is robust enough to offset the potential delay in new business closing.
-                        </div>
-</div>
-<div class="flex gap-md group">
-<div class="w-12 text-outline font-mono-sm text-mono-sm pt-1 shrink-0">03:00</div>
-<div class="flex-1 pb-md border-b border-surface-container group-hover:bg-surface-container-low px-sm -mx-sm rounded transition-colors">
-<strong class="text-on-surface block mb-xs">Speaker 1:</strong>
-                            I'll hand it over to marketing to discuss the lead generation efforts supporting that expansion motion.
-                        </div>
-</div>
-</div>
-</div>
-<!-- Right Side: AI Summary -->
-<div class="w-full md:w-1/2 flex flex-col h-[calc(100vh-140px)]">
-<div class="bg-surface-container-lowest rounded-lg border border-outline-variant flex-1 flex flex-col overflow-hidden shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)]">
-<div class="p-md border-b border-outline-variant bg-surface-bright flex items-center gap-sm rounded-t-lg">
-<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-<h2 class="font-headline-md text-headline-md text-on-surface">AI Summary</h2>
-</div>
-<div class="flex-1 overflow-y-auto p-md md:p-lg" id="summary-container">
-<div class="space-y-xl">
-<!-- Key Takeaways -->
-<div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-md">Key Takeaways</h3>
-<ul class="space-y-sm font-body-md text-body-md text-on-surface-variant">
-<li class="flex gap-sm items-start">
-<span class="material-symbols-outlined text-primary text-[20px] mt-xs shrink-0">check_circle</span>
-<span><strong>Strong Q3 Performance:</strong> Enterprise segment saw a significant 42% Year-over-Year growth.</span>
-</li>
-<li class="flex gap-sm items-start">
-<span class="material-symbols-outlined text-primary text-[20px] mt-xs shrink-0">check_circle</span>
-<span><strong>Reduced Churn:</strong> Overall churn dropped to 1.2%, aided by higher retention rates and the new pricing model.</span>
-</li>
-<li class="flex gap-sm items-start">
-<span class="material-symbols-outlined text-primary text-[20px] mt-xs shrink-0">check_circle</span>
-<span><strong>Q4 Outlook:</strong> Anticipated longer sales cycles for new logos due to macroeconomic factors, but expansion pipeline is expected to compensate.</span>
-</li>
-</ul>
-</div>
-<!-- Action Items -->
-<div class="bg-surface-container-low p-md rounded-lg border border-surface-variant">
-<h3 class="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-sm">Action Items</h3>
-<ul class="space-y-sm font-body-md text-body-md text-on-surface-variant list-disc list-inside">
-<li>Marketing team to present lead generation strategies for existing account expansion.</li>
-<li>Sales team to adjust Q4 forecasting models to account for extended net-new sales cycles.</li>
-</ul>
-</div>
-<!-- Sentiment Analysis -->
-<div>
-<h3 class="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-md">Overall Sentiment</h3>
-<div class="flex items-center gap-md">
-<div class="w-16 h-16 rounded-full border-4 border-surface-container flex items-center justify-center relative">
-<svg class="absolute inset-0 w-full h-full -rotate-90" viewbox="0 0 36 36">
-<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="85, 100" stroke-width="4"></path>
-</svg>
-<span class="font-headline-md text-headline-md text-on-surface z-10">85</span>
-</div>
-<div class="font-body-md text-body-md text-on-surface-variant">
-<strong>Positive &amp; Confident</strong><br/>
-                                        Tone indicates strong confidence in recent results, with a cautious but prepared approach to future headwinds.
-                                    </div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Footer Actions -->
-<div class="mt-lg flex justify-end">
-<button onclick="deleteSummary()" id="delete-btn" class="bg-error-container text-on-error-container hover:bg-error hover:text-on-error font-label-md text-label-md py-2 px-xl rounded-lg transition-colors flex items-center gap-sm">
-<span class="material-symbols-outlined text-[20px]">delete</span>
+                </div>
+                <div class="flex-1 overflow-y-auto p-6">
+                    <p id="transcript-container" class="text-on-surface-variant dark:text-gray-300 leading-relaxed whitespace-pre-wrap"></p>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-1/2 flex flex-col h-[calc(100vh-140px)]">
+                <div class="bg-surface-container-lowest dark:bg-[#1e1e1e] rounded-xl border border-outline-variant dark:border-gray-800 flex-1 flex flex-col overflow-hidden shadow-sm transition-colors duration-300">
+                    <div class="p-5 border-b border-outline-variant dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex items-center gap-2 rounded-t-xl">
+                        <span class="material-symbols-outlined text-primary dark:text-[#c3c0ff]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                        <h2 class="text-lg font-semibold text-on-surface dark:text-white">AI Summary</h2>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-6">
+                        <h3 id="summary-title" class="text-2xl font-bold text-on-surface dark:text-white mb-6 pb-4 border-b border-gray-200 dark:border-gray-700"></h3>
+                        <div id="summary-content" class="text-on-surface-variant dark:text-gray-300"></div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="deleteSummary()" class="bg-error-container dark:bg-red-900/30 text-on-error-container dark:text-red-400 hover:bg-error hover:text-white border border-red-200 dark:border-red-800 text-sm font-medium py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
                         Delete this File
                     </button>
-</div>
-</div>
-</div>
-</main>
-<script>
-    const BASE_URL = 'http://localhost:8000';
+                </div>
+            </div>
+        </div>
+    </main>
 
-    if (!localStorage.getItem('pslw_user')) { window.location.href = 'login.html'; }
+    <script>
+        const BASE_URL = 'http://localhost:8000';
 
-    const params = new URLSearchParams(window.location.search);
-    const summaryId = params.get('id');
-    if (!summaryId) { window.location.href = 'home.html'; }
-
-    async function loadSummary() {
-        try {
-            const res = await fetch(`${BASE_URL}/api/summary/${summaryId}`);
-            if (!res.ok) throw new Error('Not found');
-            const data = await res.json();
-
-            // 헤더 업데이트
-            const badge = document.getElementById('summary-id-badge');
-            if (badge) badge.textContent = `ID: ${summaryId}`;
-            document.title = `${data.filename} - PSLW`;
-
-            // 트랜스크립트 표시
-            const transcriptContainer = document.getElementById('transcript-container');
-            if (transcriptContainer) {
-                transcriptContainer.innerHTML = '';
-                const p = document.createElement('p');
-                p.className = 'font-body-md text-body-md text-on-surface-variant leading-relaxed whitespace-pre-wrap';
-                p.textContent = data.transcript || '(내용 없음)';
-                transcriptContainer.appendChild(p);
-            }
-
-            // AI 요약 표시
-            const summaryContainer = document.getElementById('summary-container');
-            if (summaryContainer) {
-                summaryContainer.innerHTML = '';
-                const heading = document.createElement('h3');
-                heading.className = 'font-headline-md text-headline-md text-on-surface mb-md';
-                heading.textContent = data.filename;
-                const p = document.createElement('p');
-                p.className = 'font-body-md text-body-md text-on-surface-variant leading-relaxed whitespace-pre-wrap';
-                p.textContent = data.summaryText || '(요약 없음)';
-                summaryContainer.appendChild(heading);
-                summaryContainer.appendChild(p);
-            }
-        } catch {
-            alert('데이터를 불러오는 데 실패했습니다.');
-            window.location.href = 'home.html';
+        // 1. 다크모드 상태 동기화 (home.html과 동일하게)
+        if (localStorage.getItem('theme') === 'dark' || document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.add('dark');
         }
-    }
 
-    async function deleteSummary() {
-        if (!confirm('이 요약을 삭제하시겠습니까?')) return;
-        try {
-            const res = await fetch(`${BASE_URL}/api/summary/${summaryId}`, { method: 'DELETE' });
-            if (res.ok) { window.location.href = 'home.html'; }
-            else { alert('삭제 실패. 다시 시도해주세요.'); }
-        } catch { alert('서버 연결 오류.'); }
-    }
+        // 2. 인증 및 파라미터 확인
+        if (!localStorage.getItem('pslw_user')) { window.location.href = 'login.html'; }
+        const params = new URLSearchParams(window.location.search);
+        const summaryId = params.get('id');
+        if (!summaryId) { window.location.href = 'home.html'; }
 
-    document.addEventListener('DOMContentLoaded', loadSummary);
-</script>
-</body></html>
+        // 3. 데이터 로드 및 렌더링
+        async function loadSummary() {
+            try {
+                const res = await fetch(`${BASE_URL}/api/summary/${summaryId}`);
+                if (!res.ok) throw new Error('Not found');
+                const data = await res.json();
+
+                // 헤더 업데이트
+                document.getElementById('summary-id-badge').textContent = `ID: ${summaryId}`;
+                document.title = `${data.filename} - PSLW`;
+                document.getElementById('summary-title').textContent = data.filename;
+
+                // STT 원본 텍스트 렌더링
+                document.getElementById('transcript-container').textContent = data.transcript || '(내용 없음)';
+
+                // AI 요약본 렌더링 (진짜 핵심!)
+                const summaryRawText = data.summaryText || data.summary || '(요약 없음)';
+                
+                // 마크다운 파싱을 거쳐서 HTML로 삽입
+                if(summaryRawText !== '(요약 없음)') {
+                    document.getElementById('summary-content').innerHTML = marked.parse(summaryRawText);
+                } else {
+                    document.getElementById('summary-content').textContent = summaryRawText;
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert('데이터를 불러오는 데 실패했습니다.');
+                window.location.href = 'home.html';
+            }
+        }
+
+        // 4. 삭제 기능
+        async function deleteSummary() {
+            if (!confirm('정말 이 요약 데이터를 영구 삭제하시겠습니까?')) return;
+            try {
+                const res = await fetch(`${BASE_URL}/api/summary/${summaryId}`, { method: 'DELETE' });
+                if (res.ok) { window.location.href = 'home.html'; }
+                else { alert('삭제에 실패했습니다.'); }
+            } catch { alert('서버 연결 오류가 발생했습니다.'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadSummary);
+    </script>
+</body>
+</html>
