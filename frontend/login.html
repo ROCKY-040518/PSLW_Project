@@ -127,8 +127,13 @@
           }
         }
     </script>
+<script>
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    }
+</script>
 </head>
-<body class="bg-background min-h-screen flex items-center justify-center relative overflow-hidden font-body-md text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container">
+<body class="bg-background dark:bg-[#121212] min-h-screen flex items-center justify-center relative overflow-hidden font-body-md text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container">
 <!-- Atmospheric Background Elements -->
 <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
 <div class="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-fixed-dim/20 blur-[120px]"></div>
@@ -138,7 +143,7 @@
 <!-- Applying Strict Constraints: No navigation shell for linear/transactional flow -->
 <main class="w-full max-w-[440px] px-margin-mobile md:px-0 z-10">
 <!-- Glassmorphism/Modern Card Profile -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] p-xl relative">
+<div class="bg-surface-container-lowest dark:bg-[#1e1e1e] border border-outline-variant dark:border-gray-800 dark:text-gray-200 rounded-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] p-xl relative">
 <!-- Header Section -->
 <div class="flex flex-col items-center mb-xl text-center">
 <div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center mb-md border border-outline-variant">
@@ -153,26 +158,26 @@
 <form class="space-y-lg" id="auth-form" onsubmit="event.preventDefault();">
 <!-- Username -->
 <div>
-<label class="block font-label-md text-label-md text-on-surface mb-sm" for="username">Username</label>
+<label class="block font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] mb-sm" for="username">Username</label>
 <div class="relative">
 <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-outline">
 <span class="material-symbols-outlined text-xl">person</span>
 </span>
-<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg pl-10 pr-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-outline-variant" id="username" name="username" placeholder="Enter your username" required="" type="text"/>
+<input class="w-full bg-surface-container-lowest dark:bg-[#1e1e1e] border border-outline-variant dark:border-gray-800 dark:text-gray-200 text-on-surface dark:text-[#f8f9fa] font-body-md text-body-md rounded-lg pl-10 pr-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-outline-variant" id="username" name="username" placeholder="Enter your username" required="" type="text"/>
 </div>
 </div>
 <!-- Password -->
 <div>
 <div class="flex justify-between items-center mb-sm">
-<label class="block font-label-md text-label-md text-on-surface" for="password">Password</label>
+<label class="block font-label-md text-label-md text-on-surface dark:text-[#f8f9fa]" for="password">Password</label>
 <a class="font-body-sm text-body-sm text-primary hover:text-on-primary-fixed-variant transition-colors" href="#" id="forgot-password-link">Forgot?</a>
 </div>
 <div class="relative">
 <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-outline">
 <span class="material-symbols-outlined text-xl">lock</span>
 </span>
-<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg pl-10 pr-10 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-outline-variant" id="password" name="password" placeholder="••••••••" required="" type="password"/>
-<button class="absolute inset-y-0 right-0 flex items-center pr-3 text-outline hover:text-on-surface transition-colors" onclick="togglePasswordVisibility()" type="button">
+<input class="w-full bg-surface-container-lowest dark:bg-[#1e1e1e] border border-outline-variant dark:border-gray-800 dark:text-gray-200 text-on-surface dark:text-[#f8f9fa] font-body-md text-body-md rounded-lg pl-10 pr-10 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-outline-variant" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 flex items-center pr-3 text-outline hover:text-on-surface dark:text-[#f8f9fa] transition-colors" onclick="togglePasswordVisibility()" type="button">
 <span class="material-symbols-outlined text-xl" id="visibility-icon">visibility</span>
 </button>
 </div>
@@ -187,12 +192,12 @@
 </div>
 <!-- AI Provider Dropdown -->
 <div>
-<label class="block font-label-md text-label-md text-on-surface mb-sm" for="provider">AI Provider</label>
+<label class="block font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] mb-sm" for="provider">AI Provider</label>
 <div class="relative">
 <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-outline">
 <span class="material-symbols-outlined text-xl">smart_toy</span>
 </span>
-<select class="w-full bg-surface border border-outline-variant text-on-surface font-body-md text-body-md rounded-lg pl-10 pr-10 py-2.5 appearance-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer" id="provider" name="provider">
+<select class="w-full bg-surface dark:bg-[#1e1e1e] border border-outline-variant dark:border-gray-800 dark:text-gray-200 text-on-surface dark:text-[#f8f9fa] font-body-md text-body-md rounded-lg pl-10 pr-10 py-2.5 appearance-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer" id="provider" name="provider">
 <option value="openai">OpenAI (GPT-4o-mini)</option>
 <option value="gemini">Google Gemini</option>
 </select>
@@ -203,12 +208,12 @@
 </div>
 <!-- API Key -->
 <div>
-<label class="block font-label-md text-label-md text-on-surface mb-sm" for="apikey">API Key</label>
+<label class="block font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] mb-sm" for="apikey">API Key</label>
 <div class="relative">
 <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-outline">
 <span class="material-symbols-outlined text-xl">key</span>
 </span>
-<input class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-mono-sm text-mono-sm rounded-lg pl-10 pr-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-outline-variant" id="apikey" name="apikey" placeholder="sk-..." type="text"/>
+<input class="w-full bg-surface-container-lowest dark:bg-[#1e1e1e] border border-outline-variant dark:border-gray-800 dark:text-gray-200 text-on-surface dark:text-[#f8f9fa] font-mono-sm text-mono-sm rounded-lg pl-10 pr-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-outline-variant" id="apikey" name="apikey" placeholder="sk-..." type="text"/>
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant mt-2 text-xs">Your key is encrypted locally and never sent to our servers.</p>
 </div>
@@ -231,8 +236,8 @@
 </div>
 <!-- Footer Links -->
 <div class="mt-lg flex justify-center gap-6">
-<a class="font-body-sm text-body-sm text-outline hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
-<a class="font-body-sm text-body-sm text-outline hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-outline hover:text-on-surface dark:text-[#f8f9fa] transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-outline hover:text-on-surface dark:text-[#f8f9fa] transition-colors" href="#">Terms of Service</a>
 </div>
 </main>
 <script>

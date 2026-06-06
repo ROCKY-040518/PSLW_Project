@@ -73,6 +73,20 @@ def init_db() -> None:
             """
         )
         conn.commit()
+
+        try:
+            cursor.execute("ALTER TABLE summaries ADD COLUMN created_at TEXT;")
+        except:
+            pass
+        try:
+            cursor.execute("ALTER TABLE summaries ADD COLUMN provider TEXT;")
+        except:
+            pass
+        try:
+            cursor.execute("ALTER TABLE summaries ADD COLUMN type TEXT;")
+        except:
+            pass
+
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN total_processed_files INTEGER DEFAULT 0;")
         except sqlite3.OperationalError:
@@ -440,10 +454,21 @@ async def upload_audio(
 
     # ── DB 저장 ───────────────────────────────
     try:
+        import datetime
+        now = datetime.datetime.now().strftime("%b %d, %Y")
+        
+        ext = os.path.splitext(file.filename or "audio")[1].lower()
+        if ext in ['.mp3', '.wav', '.m4a', '.flac']:
+            file_type = "Audio"
+        elif ext in ['.mp4', '.avi', '.mov']:
+            file_type = "Video"
+        else:
+            file_type = "Document"
+            
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO summaries (username, filename, transcript, summary) VALUES (?, ?, ?, ?)",
-            (username, file.filename or "unknown", transcript, summary),
+            "INSERT INTO summaries (username, filename, transcript, summary, created_at, provider, type) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (username, file.filename or "unknown", transcript, summary, now, provider, file_type),
         )
         cursor.execute(
             "UPDATE users SET total_processed_files = total_processed_files + 1, total_api_requests = total_api_requests + 1 WHERE username = ?",
@@ -468,11 +493,17 @@ def get_summaries(username: str):
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, filename FROM summaries WHERE username = ? ORDER BY id DESC",
+            "SELECT id, filename, created_at, provider, type FROM summaries WHERE username = ? ORDER BY id DESC",
             (username,),
         )
         rows = cursor.fetchall()
-        return [{"id": row["id"], "filename": row["filename"]} for row in rows]
+        return [{
+            "id": row["id"], 
+            "filename": row["filename"],
+            "date": row["created_at"] or "Recent",
+            "provider": row["provider"] or "Unknown",
+            "type": row["type"] or "Audio"
+        } for row in rows]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"목록 조회 실패: {e}")
     finally:

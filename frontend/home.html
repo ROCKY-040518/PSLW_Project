@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en"><head>
 <meta charset="utf-8"/>
@@ -626,8 +626,8 @@
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="font-headline-md text-headline-md text-on-surface dark:text-[#f8f9fa]">Daily API Usage</h3>
                             <div class="flex gap-2">
-                                <button class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] bg-surface-variant px-3 py-1 rounded">7D</button>
-                                <button class="font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0] hover:bg-surface-variant px-3 py-1 rounded transition-colors">30D</button>
+                                <button class="font-label-md text-label-md text-on-surface dark:text-[#f8f9fa] bg-surface-variant dark:bg-[#333333] px-3 py-1 rounded">7D</button>
+                                <button class="font-label-md text-label-md text-on-surface-variant dark:text-[#a0a0a0] hover:bg-surface-variant dark:hover:bg-[#333333] px-3 py-1 rounded transition-colors">30D</button>
                             </div>
                         </div>
                         <!-- CSS Mocked Bar Chart -->
@@ -928,14 +928,14 @@
                             </div>
                         </div>
                     </td>
-                    <td class="py-4 px-4 font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">Recent</td>
+                    <td class="py-4 px-4 font-body-sm text-body-sm text-on-surface-variant dark:text-[#a0a0a0]">${item.date || 'Recent'}</td>
                     <td class="py-4 px-4 dark:text-[#cccccc]">
-                        <span class="inline-flex items-center px-2 py-1 rounded-md bg-surface-container text-on-surface dark:text-[#f8f9fa] font-label-md text-[12px]">-</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded-md bg-surface-container dark:bg-gray-800 text-on-surface dark:text-[#f8f9fa] font-label-md text-[12px]">${item.provider || '-'}</span>
                     </td>
                     <td class="py-4 px-4 dark:text-[#cccccc]">
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container/30 text-secondary border border-secondary/20 font-label-md text-[12px]">
                             <span class="material-symbols-outlined" style="font-size: 14px;">subject</span>
-                            Summary
+                            ${item.type || 'Summary'}
                         </span>
                     </td>
                     <td class="py-4 px-4 text-right dark:text-[#cccccc]">
@@ -991,7 +991,19 @@
         if (!confirm('이 요약을 삭제하시겠습니까?')) return;
         try {
             const res = await fetch(`${BASE_URL}/api/summary/${id}`, { method: 'DELETE' });
-            if (res.ok) { await loadSummaries(); }
+            if (res.ok) { await loadSummaries();
+
+        // URL Parameter Routing for Upload
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('action') === 'upload') {
+            switchView('view-dashboard');
+            setTimeout(() => {
+                const fi = document.getElementById('file-input');
+                if (fi) fi.click();
+            }, 100);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+ }
             else { alert('삭제 실패'); }
         } catch { alert('서버 연결 오류'); }
     }
@@ -1013,7 +1025,19 @@
             formData.append('username', user.username);
             const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: formData });
             if (!res.ok) { const data = await res.json(); alert(`업로드 실패: ${data.detail}`); }
-            else { await loadSummaries(); }
+            else { await loadSummaries();
+
+        // URL Parameter Routing for Upload
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('action') === 'upload') {
+            switchView('view-dashboard');
+            setTimeout(() => {
+                const fi = document.getElementById('file-input');
+                if (fi) fi.click();
+            }, 100);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+ }
         } catch { alert('서버 연결 오류.'); }
         finally {
             loadingState.classList.add('hidden');
@@ -1237,6 +1261,18 @@
         }
 
         loadSummaries();
+
+        // URL Parameter Routing for Upload
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('action') === 'upload') {
+            switchView('view-dashboard');
+            setTimeout(() => {
+                const fi = document.getElementById('file-input');
+                if (fi) fi.click();
+            }, 100);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
 
         // Search & Filters
         const searchInput = document.getElementById('history-search');
