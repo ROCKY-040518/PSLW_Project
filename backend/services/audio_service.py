@@ -3,7 +3,7 @@ from database import get_conn
 from services.ai_service import summarize_with_openai, summarize_with_gemini
 import core.state as state
 
-async def process_audio_task(task_id: str, username: str, filename: str, tmp_path: str, provider: str, api_key: str):
+def process_audio_task(task_id: str, username: str, filename: str, tmp_path: str, provider: str, api_key: str):
     try:
         if state.whisper_model is None:
             raise Exception("Whisper 모델이 초기화되지 않았습니다.")

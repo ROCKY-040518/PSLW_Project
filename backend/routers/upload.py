@@ -1,4 +1,5 @@
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, BackgroundTasks
+import shutil
 import os
 import tempfile
 import uuid
@@ -37,13 +38,21 @@ async def upload_audio(
     conn.close()
 
     suffix = os.path.splitext(file.filename or "audio")[1] or ".tmp"
+    
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             tmp_path = tmp.name
-            content = await file.read()
-            tmp.write(content)
+            
+            # 👇 핵심: 메모리에 통째로 올리지 않고, 수도꼭지처럼 파일 데이터를 흘려보냅니다.
+            shutil.copyfileobj(file.file, tmp)
+            
+        # 👇 꼼꼼한 방어 로직: 저장된 파일이 진짜 0바이트면 여기서 즉시 컷트!
+        if os.path.getsize(tmp_path) == 0:
+            os.remove(tmp_path)
+            raise HTTPException(status_code=400, detail="업로드된 파일이 비어있거나 전송 중 손상되었습니다.")
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"임시 파일 저장 실패: {e}")
+        raise HTTPException(status_code=500, detail=f"파일 저장 실패: {e}")
 
     task_id = str(uuid.uuid4())
     state.task_db[task_id] = {"status": "processing"}
