@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 import time
 
+# 요약을 생성할 때 AI에게 전달할 공통 지시문(프롬프트)을 정의합니다.
 SUMMARY_PROMPT = (
     "다음 텍스트는 음성 인식(STT) 변환 결과입니다. "
     "이 텍스트의 전체적인 맥락과 성격을 먼저 분석한 뒤, 가장 적합한 양식을 스스로 선택하여 한국어로 요약해 주세요. "
@@ -25,8 +26,11 @@ SUMMARY_PROMPT = (
 def summarize_with_openai(api_key: str, transcript: str) -> str:
     """OpenAI GPT-4o-mini를 사용하여 텍스트를 요약합니다."""
     try:
+        # OpenAI 라이브러리를 동적으로 가져옵니다.
         from openai import OpenAI  # type: ignore
+        # 사용자의 API 키를 이용해 OpenAI 클라이언트를 초기화합니다.
         client = OpenAI(api_key=api_key)
+        # GPT-4o-mini 모델을 사용하여 텍스트 생성을 요청합니다.
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -37,8 +41,10 @@ def summarize_with_openai(api_key: str, transcript: str) -> str:
             ],
             temperature=0.3,
         )
+        # 생성된 응답 텍스트를 추출하고 좌우 공백을 제거하여 반환합니다.
         return (response.choices[0].message.content or "").strip()
     except Exception as e:
+        # 호출 과정에서 에러가 발생하면 500 에러를 던집니다.
         raise HTTPException(
             status_code=500, detail=f"OpenAI API 호출 실패: {e}"
         )
@@ -46,12 +52,16 @@ def summarize_with_openai(api_key: str, transcript: str) -> str:
 def summarize_with_gemini(api_key: str, transcript: str, retries: int = 3) -> str:
     """Google Gemini API를 사용하여 텍스트를 요약합니다. (재시도 로직 추가)"""
     try:
+        # Gemini 라이브러리를 동적으로 가져옵니다.
         from google import genai  # type: ignore
         from google.genai import types  # type: ignore
+        # 사용자의 API 키를 이용해 Gemini 클라이언트를 초기화합니다.
         client = genai.Client(api_key=api_key)
         
+        # 지정된 횟수(retries)만큼 재시도 루프를 돕니다.
         for attempt in range(retries):
             try:
+                # Gemini 모델을 호출하여 텍스트 생성을 요청합니다.
                 response = client.models.generate_content(
                     model="gemini-3.1-flash-lite", 
                     contents=SUMMARY_PROMPT + transcript,
@@ -59,17 +69,23 @@ def summarize_with_gemini(api_key: str, transcript: str, retries: int = 3) -> st
                         temperature=0.3,
                     ),
                 )
+                # 생성된 응답 텍스트를 추출하고 좌우 공백을 제거하여 반환합니다.
                 return (response.text or "").strip()
             except Exception as e:
+                # 에러 메시지 중 503(서버 오류) 또는 429(너무 많은 요청)가 포함되어 있는지 확인합니다.
+                # 재시도 기회가 남아있을 경우에만 다시 시도합니다.
                 if ("503" in str(e) or "429" in str(e)) and attempt < retries - 1:
+                    # 점진적으로 대기 시간을 늘려가며 재시도를 준비합니다.
                     wait_time = attempt + 2 
                     print(f"⚠️ Gemini 서버 혼잡 감지. {wait_time}초 후 재시도합니다... ({attempt+1}/{retries})")
                     time.sleep(wait_time)
                     continue 
                 else:
+                    # 재시도 횟수를 모두 소진했거나 다른 치명적인 에러인 경우 예외를 발생시킵니다.
                     raise e
         return ""
     except Exception as e:
+        # 호출 과정에서 에러가 발생하면 500 에러를 던집니다.
         raise HTTPException(
             status_code=500, detail=f"Gemini API 호출 실패: {e}"
         )
