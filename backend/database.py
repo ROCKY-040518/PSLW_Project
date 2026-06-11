@@ -71,3 +71,18 @@ def get_conn() -> sqlite3.Connection:
     except sqlite3.Error as e:
         # 커넥션 생성 과정에서 에러가 나면 500 에러를 반환합니다.
         raise HTTPException(status_code=500, detail=f"DB 연결 실패: {e}")
+
+# -------------------------------------------------------------------
+# [마감 전 방어적 리팩토링] FastAPI 의존성 주입(DI)을 위한 함수 추가
+# -------------------------------------------------------------------
+def get_db():
+    """
+    FastAPI Depends를 위한 DB 커넥션 제너레이터.
+    - check_same_thread=False: FastAPI의 멀티 스레드 환경에서 SQLite Thread 에러를 방지합니다.
+    """
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
